@@ -79,7 +79,7 @@ const VIDEOS: VideoItem[] = [
 
 
 
-const ITEMS_PER_PAGE = 6
+
 
 export default function Folder() {
   const [imageModal, setImageModal] = useState<ImageItem | null>(null)

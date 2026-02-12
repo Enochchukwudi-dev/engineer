@@ -161,11 +161,12 @@ ${formData.message ? `Message: ${formData.message}` : ''}`
                                 />
                                 {validFields.name && (
                                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                        <Image
+                                        <img
                                             src="/tick.svg"
                                             alt="Valid"
                                             width={20}
                                             height={20}
+                                            loading="eager"
                                         />
                                     </div>
                                 )}
@@ -187,11 +188,12 @@ ${formData.message ? `Message: ${formData.message}` : ''}`
                                 />
                                 {validFields.phone && (
                                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                        <Image
+                                        <img
                                             src="/tick.svg"
                                             alt="Valid"
                                             width={20}
                                             height={20}
+                                            loading="eager"
                                         />
                                     </div>
                                 )}
