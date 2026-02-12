@@ -21,30 +21,8 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react"],
   },
-  // Ensure static files are served correctly
-  headers: async () => {
-    return [
-      {
-        source: "/videos/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, immutable"
-          },
-          {
-            key: "Content-Type",
-            value: "video/mp4"
-          },
-          {
-            key: "Accept-Ranges",
-            value: "bytes"
-          }
-        ]
-      }
-    ]
-  },
-  // Don't compress video files
-  compress: true,
+  // Disable gzip compression to prevent video corruption
+  compress: false,
 } as NextConfig;
 
 export default nextConfig;
