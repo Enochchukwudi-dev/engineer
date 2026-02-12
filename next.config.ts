@@ -43,8 +43,8 @@ const nextConfig = {
       }
     ]
   },
-  // Don't compress video files
-  compress: true,
+  // Disable Next.js response compression to avoid accidental compression of large static video files
+  compress: false,
 } as NextConfig;
 
 export default nextConfig;
