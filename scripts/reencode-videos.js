@@ -1,3 +1,4 @@
+/* eslint-disable */
 const fs = require('fs')
 const path = require('path')
 const { spawnSync } = require('child_process')
@@ -6,7 +7,7 @@ const { spawnSync } = require('child_process')
 let ffmpegPath
 try {
   ffmpegPath = require('ffmpeg-static')
-} catch (e) {
+} catch (_e) {
   console.error('ffmpeg-static not found. Run `npm i -D ffmpeg-static` and try again.')
   process.exit(1)
 }
