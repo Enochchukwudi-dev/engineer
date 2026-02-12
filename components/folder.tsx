@@ -132,14 +132,18 @@ export default function Folder() {
                   />
                 </button>
               )}
-              <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors" />
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                {media.isVideo ? (
-                  <Play className="w-8 h-8 text-white" />
-                ) : (
-                  <span className="px-3 py-1 bg-white/90 text-black text-xs font-medium rounded-sm">View</span>
-                )}
-              </div>
+              {!(playingIndex === idx) && (
+                <>
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors pointer-events-none" />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    {media.isVideo ? (
+                      <Play className="w-8 h-8 text-white" />
+                    ) : (
+                      <span className="px-3 py-1 bg-white/90 text-black text-xs font-medium rounded-sm">View</span>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           ))}
         </div>

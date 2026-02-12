@@ -16,6 +16,7 @@ const VideoPreview: React.FC<Props> = ({ filename, poster, className, autoplay =
   const triedFallback = React.useRef(false)
 
   const src = filename ? `/videos/optimized_${filename}.mp4` : ""
+  const [failed, setFailed] = React.useState(false)
 
   // add simple error fallback: try the non-optimized filename if optimized fails
   React.useEffect(() => {
@@ -25,6 +26,7 @@ const VideoPreview: React.FC<Props> = ({ filename, poster, className, autoplay =
 
     // reset fallback tracker when src changes
     triedFallback.current = false
+    setFailed(false)
 
     const onError = () => {
       if (!triedFallback.current && src.includes("optimized_")) {
@@ -32,7 +34,10 @@ const VideoPreview: React.FC<Props> = ({ filename, poster, className, autoplay =
         const fallback = src.replace("/videos/optimized_", "/videos/")
         v.src = fallback
         v.load()
+        return
       }
+      // fallback also failed
+      setFailed(true)
     }
 
     v.addEventListener("error", onError)
@@ -41,10 +46,24 @@ const VideoPreview: React.FC<Props> = ({ filename, poster, className, autoplay =
 
   if (!filename) return null;
 
+  if (failed) {
+    return (
+      <div className={className ?? ""} style={className ? undefined : { width: "100%", height: "100%", display: 'block', objectFit: 'cover' }}>
+        {poster ? (
+          <img src={poster} alt={filename} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        ) : (
+          <div style={{ width: '100%', height: '100%', backgroundColor: '#000' }} />
+        )}
+        <div className="flex items-center justify-center">
+          <a href={src} target="_blank" rel="noopener noreferrer" className="mt-2 underline">Open video</a>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <video
       ref={videoRef}
-      src={src}
       poster={poster}
       preload="metadata" /* load only metadata for low RAM usage */
       muted={autoplay}
@@ -55,7 +74,11 @@ const VideoPreview: React.FC<Props> = ({ filename, poster, className, autoplay =
       // default inline styles in case caller doesn't provide classes
       style={className ? undefined : { width: "100%", height: "100%", objectFit: "cover", display: "block" }}
       aria-hidden={false}
-    />
+    >
+      <source src={src} type="video/mp4" />
+      {/* Fallback for old browsers */}
+      Your browser does not support the video tag.
+    </video>
   );
 };
 
