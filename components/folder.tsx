@@ -152,6 +152,8 @@ export default function Folder() {
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                     sizes="(max-width: 768px) 50vw, 33vw"
+                    loading="lazy"
+                    quality={75}
                   />
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors pointer-events-none" />
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
@@ -207,10 +209,15 @@ export default function Folder() {
                 <button
                   key={video.src ?? `${video.title}-${idx}`}
                   onClick={() => setVideoModal(video as VideoItem)}
+                  onMouseEnter={(e) => {
+                    const vid = e.currentTarget.querySelector('video') as HTMLVideoElement
+                    if (vid) vid.load()
+                  }}
                   className="group relative h-40 overflow-hidden bg-muted hover:shadow-lg transition-shadow duration-300 rounded-sm"
                 >
                   <video
                     src={video.src}
+                    preload="none"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors pointer-events-none" />

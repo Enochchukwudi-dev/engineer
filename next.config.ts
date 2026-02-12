@@ -21,6 +21,24 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react"],
   },
+  // Ensure static files are served correctly
+  headers: async () => {
+    return [
+      {
+        source: "/videos/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable"
+          },
+          {
+            key: "Content-Type",
+            value: "video/mp4"
+          }
+        ]
+      }
+    ]
+  }
 } as NextConfig;
 
 export default nextConfig;
