@@ -216,10 +216,12 @@ export default function Folder() {
                   className="group relative h-40 overflow-hidden bg-muted hover:shadow-lg transition-shadow duration-300 rounded-sm"
                 >
                   <video
-                    src={video.src}
-                    preload="none"
+                    preload="metadata"
+                    crossOrigin="anonymous"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
+                  >
+                    <source src={video.src} type="video/mp4" />
+                  </video>
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors pointer-events-none" />
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                     <span className="px-3 py-1 bg-white/90 text-black text-xs font-medium rounded-sm">Play</span>
@@ -283,7 +285,17 @@ export default function Folder() {
         <div aria-modal role="dialog" className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6" onClick={() => setVideoModal(null)}>
           <div className="absolute inset-0 bg-white/40 dark:bg-black/60 backdrop-blur-sm" />
           <div className="relative z-10 max-w-full max-h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-            <video src={videoModal.src} controls autoPlay className="max-w-[90vw] max-h-[80vh] object-contain shadow-lg" />
+            <video 
+              controls 
+              autoPlay 
+              muted 
+              crossOrigin="anonymous"
+              style={{ maxWidth: '90vw', maxHeight: '80vh', objectFit: 'contain' }}
+              className="shadow-lg"
+            >
+              <source src={videoModal.src} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
           </div>
         </div>
       )}

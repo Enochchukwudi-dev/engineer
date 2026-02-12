@@ -34,11 +34,17 @@ const nextConfig = {
           {
             key: "Content-Type",
             value: "video/mp4"
+          },
+          {
+            key: "Accept-Ranges",
+            value: "bytes"
           }
         ]
       }
     ]
-  }
+  },
+  // Don't compress video files
+  compress: true,
 } as NextConfig;
 
 export default nextConfig;
