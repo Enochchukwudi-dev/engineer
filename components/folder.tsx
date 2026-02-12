@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
+import { useTheme } from "next-themes"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
 
@@ -42,37 +43,131 @@ const IMAGES: ImageItem[] = [
 ]
 
 const VIDEOS: VideoItem[] = [
-  { src: "https://www.youtube.com/watch?v=PuovsjZN11Y&list=PPSV", youtubeId: "PuovsjZN11Y", title: "Video", alt: "Video" },
-  { src: "https://www.youtube.com/watch?v=9OLYmVN1GMU&pp=ygUfY29uc3RydWN0aW9uIHByb2plY3QgbWFuYWdlbWVudA%3D%3D", youtubeId: "9OLYmVN1GMU", title: "Construction Project Management", alt: "Construction Project Management" },
-  { src: "https://www.youtube.com/shorts/cBNIOvDFGKI", youtubeId: "cBNIOvDFGKI", title: "Short", alt: "Short" },
+  { src: "https://youtube.com/shorts/RCuuUrF3xgo", youtubeId: "RCuuUrF3xgo", title: "Short", alt: "Short" },
+  { src: "https://youtube.com/shorts/iW-WGNt2siA", youtubeId: "iW-WGNt2siA", title: "Short", alt: "Short" },
+  { src: "https://youtube.com/shorts/H0YvNCkIvZg", youtubeId: "H0YvNCkIvZg", title: "Short", alt: "Short" },
+  { src: "https://youtube.com/shorts/gxT7amKRzgc", youtubeId: "gxT7amKRzgc", title: "Short", alt: "Short" },
+  { src: "https://youtube.com/shorts/dokOYgXiD_Q", youtubeId: "dokOYgXiD_Q", title: "Short", alt: "Short" },
+  { src: "https://youtube.com/shorts/sDkGsCeZOAk", youtubeId: "sDkGsCeZOAk", title: "Short", alt: "Short" },
+  { src: "https://youtube.com/shorts/EF09xe7gYI8", youtubeId: "EF09xe7gYI8", title: "Short", alt: "Short" },
 ]
 
 export default function Folder() {
+  const { theme } = useTheme()
   const [imageModal, setImageModal] = useState<ImageItem | null>(null)
   const [videoModal, setVideoModal] = useState<VideoItem | null>(null)
   const [currentPage, setCurrentPage] = useState(0)
   const [mediaType, setMediaType] = useState<"images" | "videos">("images")
-  const [isDark, setIsDark] = useState(false)
   
+  // Disable scroll when video modal is open
   useEffect(() => {
-    // Check if dark mode is enabled
-    const isDarkMode = document.documentElement.classList.contains('dark')
-    setIsDark(isDarkMode)
+    if (videoModal) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
     
-    // Listen for changes to the dark class
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'class') {
-          const isDarkMode = document.documentElement.classList.contains('dark')
-          setIsDark(isDarkMode)
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [videoModal])
+
+  // Native video listeners
+  useEffect(() => {
+    const v = videoRef.current
+    if (!v) return
+
+    const onTime = () => {
+      if (!seekingRef.current) setCurrentTime(v.currentTime)
+    }
+    const onLoaded = () => setDuration(v.duration || 0)
+    const onPlay = () => setIsPlaying(true)
+    const onPause = () => setIsPlaying(false)
+
+    v.addEventListener('timeupdate', onTime)
+    v.addEventListener('loadedmetadata', onLoaded)
+    v.addEventListener('play', onPlay)
+    v.addEventListener('pause', onPause)
+
+    return () => {
+      v.removeEventListener('timeupdate', onTime)
+      v.removeEventListener('loadedmetadata', onLoaded)
+      v.removeEventListener('play', onPlay)
+      v.removeEventListener('pause', onPause)
+    }
+  }, [videoModal])
+
+  // YouTube IFrame API setup for custom controls
+  useEffect(() => {
+    if (!videoModal?.youtubeId) {
+      // destroy any existing YT player
+      if (ytPlayerRef.current?.destroy) {
+        try { ytPlayerRef.current.destroy() } catch {}
+        ytPlayerRef.current = null
+      }
+      if (pollRef.current) {
+        window.clearInterval(pollRef.current)
+        pollRef.current = null
+      }
+      return
+    }
+
+    const loadYT = () => new Promise<void>((resolve) => {
+      if (typeof window === 'undefined') return resolve()
+      if ((window as any).YT && (window as any).YT.Player) return resolve()
+      const tag = document.createElement('script')
+      tag.src = 'https://www.youtube.com/iframe_api'
+      const firstScriptTag = document.getElementsByTagName('script')[0]
+      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag)
+      ;(window as any).onYouTubeIframeAPIReady = () => resolve()
+    })
+
+    let player: any = null
+    let mounted = true
+
+    loadYT().then(() => {
+      if (!mounted) return
+      player = new (window as any).YT.Player('yt-player', {
+        videoId: videoModal.youtubeId,
+        playerVars: { autoplay: 1, controls: 0, modestbranding: 1, rel: 0, playsinline: 1 },
+        events: {
+          onReady: (e: any) => {
+            ytPlayerRef.current = player = e.target
+            const dur = player.getDuration() || 0
+            setDuration(dur)
+            setIsPlaying(true)
+
+            // poll current time
+            pollRef.current = window.setInterval(() => {
+              if (!player || seekingRef.current) return
+              try {
+                const t = player.getCurrentTime()
+                setCurrentTime(t)
+              } catch (err) {}
+            }, 250)
+          },
+          onStateChange: (ev: any) => {
+            // 1 playing, 2 paused, 0 ended
+            if (ev.data === 1) setIsPlaying(true)
+            else setIsPlaying(false)
+            if (ev.data === 0) setCurrentTime(duration)
+          }
         }
       })
     })
-    
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
-    
-    return () => observer.disconnect()
-  }, [])
+
+    return () => {
+      mounted = false
+      if (pollRef.current) {
+        window.clearInterval(pollRef.current)
+        pollRef.current = null
+      }
+      if (ytPlayerRef.current?.destroy) {
+        try { ytPlayerRef.current.destroy() } catch {}
+        ytPlayerRef.current = null
+      }
+    }
+  }, [videoModal])
   
   const handleMediaTypeChange = (type: "images" | "videos") => {
     setMediaType(type)
@@ -84,6 +179,84 @@ export default function Folder() {
   const totalImagePages = Math.ceil(IMAGES.length / itemsPerPage)
   const paginatedVideos = VIDEOS.slice(currentPage * itemsPerPage, currentPage * itemsPerPage + itemsPerPage)
   const totalVideoPages = Math.ceil(VIDEOS.length / itemsPerPage)
+
+  // Player state for custom controls
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const ytPlayerRef = useRef<any | null>(null)
+  const pollRef = useRef<number | null>(null)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const seekingRef = useRef(false)
+  // overlay top offset so modal backdrop doesn't cover the header
+  const [overlayTop, setOverlayTop] = useState(0)
+
+  useEffect(() => {
+    const update = () => {
+      const headerEl = typeof document !== 'undefined' ? document.querySelector('header') : null
+      const h = headerEl ? (headerEl as HTMLElement).getBoundingClientRect().height : 0
+      setOverlayTop(h)
+    }
+
+    update()
+    window.addEventListener('resize', update)
+
+    const mo = typeof MutationObserver !== 'undefined' ? new MutationObserver(update) : null
+    if (mo) mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+
+    return () => {
+      window.removeEventListener('resize', update)
+      if (mo) mo.disconnect()
+    }
+  }, [])
+
+  const formatTime = (s: number) => {
+    if (!s || !isFinite(s)) return '0:00'
+    const mm = Math.floor(s / 60)
+    const ss = Math.floor(s % 60).toString().padStart(2, '0')
+    return `${mm}:${ss}`
+  }
+
+  // Toggle play/pause for native video or YouTube player
+  const togglePlay = () => {
+    if (videoModal?.youtubeId) {
+      const p = ytPlayerRef.current
+      if (!p) return
+      const state = p.getPlayerState?.() ?? p.getPlayerState()
+      // YT states: 1 playing, 2 paused
+      if (state === 1) {
+        p.pauseVideo()
+        setIsPlaying(false)
+      } else {
+        p.playVideo()
+        setIsPlaying(true)
+      }
+    } else {
+      const v = videoRef.current
+      if (!v) return
+      if (v.paused) {
+        v.play()
+        setIsPlaying(true)
+      } else {
+        v.pause()
+        setIsPlaying(false)
+      }
+    }
+  }
+
+  const handleSeek = (time: number) => {
+    seekingRef.current = true
+    setCurrentTime(time)
+    if (videoModal?.youtubeId) {
+      const p = ytPlayerRef.current
+      if (p && typeof p.seekTo === 'function') p.seekTo(time, true)
+    } else {
+      const v = videoRef.current
+      if (v) v.currentTime = time
+    }
+    // release seeking flag after a short delay
+    setTimeout(() => (seekingRef.current = false), 300)
+  }
 
   return (
     <section id="projects" className="py-20">
@@ -275,8 +448,11 @@ export default function Folder() {
       )}
 
       {videoModal && (
-        <div aria-modal role="dialog" className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6" onClick={() => setVideoModal(null)}>
-          <div className="absolute inset-0 bg-white/40 dark:bg-black/60 backdrop-blur-sm" />
+        <div aria-modal role="dialog" className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 bg-white dark:bg-black" onClick={() => setVideoModal(null)}>
+          <div
+            className="absolute left-0 right-0 bottom-0 bg-white dark:bg-black backdrop-blur-sm"
+            style={{ top: overlayTop }}
+          />
           <div className="relative z-10 max-w-full max-h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setVideoModal(null)}
@@ -285,32 +461,55 @@ export default function Folder() {
             >
               Close
             </button>
-            {videoModal.youtubeId ? (
-              <div style={{ position: 'relative', width: '90vw', maxWidth: '90vw', height: '80vh', overflow: 'hidden' }} className="shadow-lg">
-                {/* shift iframe up so YouTube header sits outside visible area; increase iframe height to compensate */}
-                <iframe
-                  title={videoModal.title}
-                  src={`https://www.youtube.com/embed/${videoModal.youtubeId}?autoplay=1&controls=1&modestbranding=1&rel=0&playsinline=1&iv_load_policy=3`}
-                  style={{ display: 'block', width: '100%', height: 'calc(100% + 160px)', transform: 'translateY(-120px)', border: '0' }}
-                  allow="autoplay; encrypted-media; picture-in-picture"
-                  allowFullScreen
-                />
+            <div style={{ width: 'min(90vw, 1200px)' }} className="flex flex-col items-center gap-3">
+              {videoModal.youtubeId ? (
+                <div style={{ position: 'relative', width: '100%', height: '80vh', overflow: 'hidden' }} className="shadow-lg">
+                  {/* YouTube player container (controlled via IFrame API) */}
+                  <div id="yt-player" style={{ width: '100%', height: '100%' }} />
 
-                {/* strong visual overlays kept as fallback (pointer-events:none) */}
-                <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 160, background: isDark ? 'black' : 'white', pointerEvents: 'none', zIndex: 50, opacity: 0.99 }} />
-                <div aria-hidden style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 120, background: isDark ? 'black' : 'white', pointerEvents: 'none', zIndex: 50, opacity: 0.98 }} />
-                <div aria-hidden style={{ position: 'absolute', bottom: 12, right: 12, width: 160, height: 64, background: isDark ? 'black' : 'white', borderRadius: 6, pointerEvents: 'none', zIndex: 52, opacity: 0.98 }} />
+                  {/* strong visual overlays kept as fallback (pointer-events:none) */}
+                  <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 160, background: theme === 'dark' ? 'black' : 'white', pointerEvents: 'none', zIndex: 50, opacity: 0.99 }} />
+                  <div aria-hidden style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 120, background: theme === 'dark' ? 'black' : 'white', pointerEvents: 'none', zIndex: 50, opacity: 0.98 }} />
+                  <div aria-hidden style={{ position: 'absolute', bottom: 12, right: 12, width: 160, height: 64, background: theme === 'dark' ? 'black' : 'white', borderRadius: 6, pointerEvents: 'none', zIndex: 52, opacity: 0.98 }} />
+                </div>
+              ) : (
+                <div style={{ width: '100%', maxHeight: '80vh', position: 'relative' }} className="shadow-lg">
+                  <video
+                    ref={videoRef}
+                    src={videoModal.src}
+                    className="w-full h-full object-contain bg-white dark:bg-black"
+                    playsInline
+                  />
+                </div>
+              )}
+
+              {/* custom seekbar + controls (works for both native video and YouTube iframe) */}
+              <div className="w-full px-3">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={togglePlay}
+                    className="px-3 py-1 rounded-md bg-primary text-primary-foreground text-sm"
+                  >
+                    {isPlaying ? 'Pause' : 'Play'}
+                  </button>
+
+                  <div className="flex-1">
+                    <input
+                      type="range"
+                      min={0}
+                      max={duration || 0}
+                      value={currentTime}
+                      onChange={(e) => handleSeek(Number(e.target.value))}
+                      className="w-full h-2 bg-gray-300 dark:bg-zinc-700 rounded-lg accent-primary"
+                    />
+                  </div>
+
+                  <div className="text-xs text-muted-foreground tabular-nums">
+                    {formatTime(currentTime)} / {formatTime(duration)}
+                  </div>
+                </div>
               </div>
-            ) : (
-              <video
-                controls
-                style={{ maxWidth: '90vw', maxHeight: '80vh', objectFit: 'contain' }}
-                className="shadow-lg"
-              >
-                <source src={videoModal.src} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            )}
+            </div>
           </div>
         </div>
       )}

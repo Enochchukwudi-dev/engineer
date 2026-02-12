@@ -118,8 +118,8 @@ export const HeroHeader = () => {
                                 onClick={() => setMenuState(!menuState)}
                                 aria-label={menuState == true ? 'Close Menu' : 'Open Menu'}
                                 className="relative z-20 -m-2.5 -mr-4 block cursor-pointer p-2.5 lg:hidden">
-                                <Menu className="in-data-[state=active]:rotate-180 in-data-[state=active]:scale-0 in-data-[state=active]:opacity-0 m-auto size-6 duration-200" />
-                                <X className="in-data-[state=active]:rotate-0 in-data-[state=active]:scale-100 in-data-[state=active]:opacity-100 absolute inset-0 m-auto size-6 -rotate-180 scale-0 opacity-0 duration-200" />
+                                <Menu className="in-data-[state=active]:rotate-180 in-data-[state=active]:scale-0 in-data-[state=active]:opacity-0 m-auto size-6 duration-200 text-foreground" />
+                                <X className="in-data-[state=active]:rotate-0 in-data-[state=active]:scale-100 in-data-[state=active]:opacity-100 absolute inset-0 m-auto size-6 -rotate-180 scale-0 opacity-0 duration-200 text-foreground" />
                             </button>
 
                             <div className="hidden lg:block">
@@ -129,7 +129,7 @@ export const HeroHeader = () => {
                                             <Link
                                                 href={item.href}
                                                 onClick={(e) => handleNavClick(e, item.href)}
-                                                className="text-muted-foreground dark:text-gray-300 hover:text-orange-500 block duration-150">
+                                                className="text-foreground hover:text-orange-500 block duration-150">
                                                 <span>{item.name}</span>
                                             </Link>
                                         </li>
@@ -138,7 +138,7 @@ export const HeroHeader = () => {
                             </div>
                         </div>
 
-                        <div className="bg-background in-data-[state=active]:block lg:in-data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl border p-6 shadow-2xl shadow-zinc-300/20 md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none dark:shadow-none dark:lg:bg-transparent">
+                        <div className="bg-card in-data-[state=active]:block lg:in-data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl border border-border p-6 shadow-2xl shadow-foreground/10 md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none">
                             <div className="lg:hidden">
                                 <ul className="space-y-6 text-base">
                                     {menuItems.map((item, index) => (
@@ -146,7 +146,7 @@ export const HeroHeader = () => {
                                             <Link
                                                 href={item.href}
                                                 onClick={(e) => handleNavClick(e, item.href)}
-                                                className="text-muted-foreground dark:text-gray-400 hover:text-orange-500 block duration-150">
+                                                className="text-foreground hover:text-orange-500 block duration-150">
                                                 <span>{item.name}</span>
                                             </Link>
                                         </li>
@@ -169,7 +169,7 @@ export const HeroHeader = () => {
             </nav>
             {menuState && (
                 <div
-                    className="fixed inset-0 lg:hidden z-10 bg-background/50 backdrop-blur-sm transition-opacity duration-200"
+                    className="fixed inset-0 lg:hidden z-10 bg-foreground/10 backdrop-blur-sm transition-opacity duration-200"
                     onClick={() => setMenuState(false)}
                     onTouchEnd={() => setMenuState(false)}
                     aria-hidden="true"
