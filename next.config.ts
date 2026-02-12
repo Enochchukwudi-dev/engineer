@@ -21,7 +21,29 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react"],
   },
-  // Disable gzip compression to prevent video corruption
+  // Ensure static files are served correctly
+  headers: async () => {
+    return [
+      {
+        source: "/videos/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable"
+          },
+          {
+            key: "Content-Type",
+            value: "video/mp4"
+          },
+          {
+            key: "Accept-Ranges",
+            value: "bytes"
+          }
+        ]
+      }
+    ]
+  },
+  // Disable server-side compression for static media (prevents MP4 corruption)
   compress: false,
 } as NextConfig;
 
