@@ -4,14 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:fast": "node ./scripts/dev-fast.js",
     "dev:webpack": "next dev --webpack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit --watch",
-    "typecheck:once": "tsc --noEmit",
-    "convert:avif": "node ./scripts/convert-to-avif.js"
+    "typecheck:once": "tsc --noEmit"
   },
   "dependencies": {
     "aos": "^2.3.4",

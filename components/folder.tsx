@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 interface ImageItem {
@@ -146,14 +145,11 @@ export default function Folder() {
                   onClick={() => setImageModal(media as ImageItem)}
                   className="group relative h-40 overflow-hidden bg-muted hover:shadow-lg transition-shadow duration-300 rounded-sm"
                 >
-                  <Image
+                  <img
                     src={media.src}
                     alt={media.alt}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    sizes="(max-width: 768px) 50vw, 33vw"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
-                    quality={75}
                   />
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors pointer-events-none" />
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
@@ -209,15 +205,9 @@ export default function Folder() {
                 <button
                   key={video.src ?? `${video.title}-${idx}`}
                   onClick={() => setVideoModal(video as VideoItem)}
-                  onMouseEnter={(e) => {
-                    const vid = e.currentTarget.querySelector('video') as HTMLVideoElement
-                    if (vid) vid.load()
-                  }}
                   className="group relative h-40 overflow-hidden bg-muted hover:shadow-lg transition-shadow duration-300 rounded-sm"
                 >
                   <video
-                    preload="metadata"
-                    crossOrigin="anonymous"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   >
                     <source src={video.src} type="video/mp4" />
@@ -287,9 +277,6 @@ export default function Folder() {
           <div className="relative z-10 max-w-full max-h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
             <video 
               controls 
-              autoPlay 
-              muted 
-              crossOrigin="anonymous"
               style={{ maxWidth: '90vw', maxHeight: '80vh', objectFit: 'contain' }}
               className="shadow-lg"
             >
