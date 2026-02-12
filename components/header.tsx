@@ -161,7 +161,7 @@ export const HeroHeader = () => {
                                         <span>Get Quote</span>
                                     </Link>
                                 </Button>
-                                <ModeToggle />
+                                <ModeToggle onThemeChange={() => setMenuState(false)} />
                             </div>
                         </div>
                     </div>
@@ -171,6 +171,7 @@ export const HeroHeader = () => {
                 <div
                     className="fixed inset-0 lg:hidden z-10 bg-background/50 backdrop-blur-sm transition-opacity duration-200"
                     onClick={() => setMenuState(false)}
+                    onTouchEnd={() => setMenuState(false)}
                     aria-hidden="true"
                 />
             )}
