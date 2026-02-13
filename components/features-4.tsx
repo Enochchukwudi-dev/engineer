@@ -7,15 +7,15 @@ import { motion } from 'motion/react'
 
 
 const SERVICES = [
-  { icon: Building, title: 'Structural Building Construction', desc: 'Delivering durable builds.', bg: '/conc7.avif' },
-  { icon: DropletOff, title: 'Roofing Systems Installation', desc: 'Shelter without compromise.', bg: '/roof2.avif' },
-  { icon: Droplets, title: 'Felting & Waterproofing Solutions', desc: 'Smart seals that last.', bg: '/felt2.avif' },
-  { icon: BrickWall, title: 'Concrete & Reinforcement Works', desc: 'Strength made to endure.', bg: '/conc2.avif' },
-  { icon: Palette, title: 'Interior & Exterior Finishing', desc: 'Flawless trim and finish.', bg: '/inte3.avif' },
-  { icon: BrickWallShield, title: 'Mansory & Block Works', desc: 'Precision in every block.', bg: '/conc1.avif' },
-  { icon: Grid, title: 'Flooring, Tiling & Paving', desc: 'Smooth installs for lasting floors.', bg: '/inte4.avif' },
-  { icon: ClipboardList, title: 'Construction Project Supervision', desc: 'Expert oversight from start to finish.', bg: '/inte6.avif' },
-  { icon: Ruler, title: 'Architectural Drawing', desc: 'Crisp plans, clear intent.', bg: '/hello.avif' },
+  { icon: Building, title: 'Structural Building Construction', desc: 'Delivering durable builds.', bg: '/conc7.jpeg' },
+  { icon: DropletOff, title: 'Roofing Systems Installation', desc: 'Shelter without compromise.', bg: '/roof2.jpeg' },
+  { icon: Droplets, title: 'Felting & Waterproofing Solutions', desc: 'Smart seals that last.', bg: '/felt2.jpeg' },
+  { icon: BrickWall, title: 'Concrete & Reinforcement Works', desc: 'Strength made to endure.', bg: '/conc2.jpeg' },
+  { icon: Palette, title: 'Interior & Exterior Finishing', desc: 'Flawless trim and finish.', bg: '/inte3.jpeg' },
+  { icon: BrickWallShield, title: 'Mansory & Block Works', desc: 'Precision in every block.', bg: '/conc1.jpeg' },
+  { icon: Grid, title: 'Flooring, Tiling & Paving', desc: 'Smooth installs for lasting floors.', bg: '/inte4.jpeg' },
+  { icon: ClipboardList, title: 'Construction Project Supervision', desc: 'Expert oversight from start to finish.', bg: '/inte6.jpeg' },
+  { icon: Ruler, title: 'Architectural Drawing', desc: 'Crisp plans, clear intent.', bg: '/hello.jpeg' },
 ]
 
 const containerVariants = {

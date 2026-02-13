@@ -20,9 +20,9 @@ export const metadata: Metadata = {
   title: "MBC Building Construction Enterprise - Building Dreams in Motion",
   description: "Premium construction services in Morocco. Crafting visions with precision and devotion, building excellence with passion and action.",
   icons: {
-    icon: "/damp2.avif",
-    shortcut: "/damp2.avif",
-    apple: "/damp2.avif",
+    icon: "/foi.png",
+    shortcut: "/foi.png",
+    apple: "/foi.png",
   },
 };
 
@@ -38,8 +38,8 @@ export default function RootLayout({
       >
        <ThemeProvider
             attribute="class"
-            defaultTheme="system"
-            enableSystem
+            defaultTheme="dark"
+            enableSystem={false}
             disableTransitionOnChange
           >            <PageLoader />            <HeroHeader />
             {children}

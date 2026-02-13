@@ -94,7 +94,7 @@ export default function FooterSection() {
                 </div>
                 <div className="my-8 flex flex-wrap justify-center gap-6 text-sm">
                     <Link
-                        href="https://www.facebook.com/share/r/1HVDmsD2p9/"
+                        href="https://web.facebook.com/marshal.okweji.2025"
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label="Facebook"

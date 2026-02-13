@@ -15,16 +15,16 @@ const BG_IMAGES = [
 ]
 
 const MARQUEE_IMAGES = [
-  { src: '/conc1.avif', alt: 'construction 1' },
-  { src: '/conc2.avif', alt: 'construction 2' },
-  { src: '/conc3.avif', alt: 'construction 3' },
-  { src: '/conc4.avif', alt: 'construction 4' },
-  { src: '/inte1.avif', alt: 'construction extra 1' },
-  { src: '/inte2.avif', alt: 'construction extra 2' },
-  { src: '/inte3.avif', alt: 'construction extra 3' },
-  { src: '/inte4.avif', alt: 'construction extra 4' },
-  { src: '/inte5.avif', alt: 'construction extra 5' },
-  { src: '/inte6.avif', alt: 'construction extra 6' },
+  { src: '/conc1.jpeg', alt: 'construction 1' },
+  { src: '/conc2.jpeg', alt: 'construction 2' },
+  { src: '/conc3.jpeg', alt: 'construction 3' },
+  { src: '/conc4.jpeg', alt: 'construction 4' },
+  { src: '/inte1.jpeg', alt: 'construction extra 1' },
+  { src: '/inte2.jpeg', alt: 'construction extra 2' },
+  { src: '/inte3.jpeg', alt: 'construction extra 3' },
+  { src: '/inte4.jpeg', alt: 'construction extra 4' },
+  { src: '/inte5.jpeg', alt: 'construction extra 5' },
+  { src: '/inte6.jpeg', alt: 'construction extra 6' },
 ]
 
 const HERO_TEXT = [

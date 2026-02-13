@@ -92,6 +92,14 @@ const IMAGES: ImageItem[] = [
 const VIDEOS: VideoItem[] = [
   // use the regular YouTube watch URL (or rely on youtubeId) — avoids loading YouTube Shorts UI/watermark
   { src: "https://www.youtube.com/watch?v=cXu5UOszOyU", youtubeId: "cXu5UOszOyU", title: "Short", alt: "Short" },
+  { src: "https://youtube.com/shorts/gN6oqXhQigg", youtubeId: "gN6oqXhQigg", title: "Short", alt: "Short" },
+  { src: "https://youtube.com/shorts/gG3L35EllyM", youtubeId: "gG3L35EllyM", title: "Short", alt: "Short" },
+  { src: "https://youtube.com/shorts/wv1V0oDDAx4", youtubeId: "wv1V0oDDAx4", title: "Short", alt: "Short" },
+  { src: "https://youtube.com/shorts/zN4texYtrr4", youtubeId: "zN4texYtrr4", title: "Short", alt: "Short" },
+  { src: "https://youtube.com/shorts/mrKl0nJJ-0w", youtubeId: "mrKl0nJJ-0w", title: "Short", alt: "Short" },
+  { src: "https://youtube.com/shorts/aU87QDB0v9I", youtubeId: "aU87QDB0v9I", title: "Short", alt: "Short" },
+  { src: "https://youtube.com/shorts/bQwq-q9h74E", youtubeId: "bQwq-q9h74E", title: "Short", alt: "Short" },
+  { src: "https://youtube.com/shorts/D0BOnXZ4Uuk", youtubeId: "D0BOnXZ4Uuk", title: "Short", alt: "Short" },
 ]
 
 export default function Folder() {
@@ -232,10 +240,22 @@ export default function Folder() {
                 const t = e.target.getCurrentTime()
                 setCurrentTime(t)
                 
-                // STRICT 720p: check every 100ms, block any quality below hd720
+                // STRICT 720p minimum: enforce hd720 or higher every 100ms
                 const currentQuality = e.target.getPlaybackQuality?.() || ''
-                if (currentQuality !== 'hd720' && currentQuality !== 'hd1080' && currentQuality !== 'highres' && typeof e.target.setPlaybackQuality === 'function') {
-                  try { e.target.setPlaybackQuality('hd720') } catch {}
+                const acceptedQualities = ['hd720', 'hd1080', 'highres', 'medium', 'large']
+                if (!acceptedQualities.includes(currentQuality) || currentQuality === 'small' || currentQuality === 'tiny') {
+                  if (typeof e.target.setPlaybackQuality === 'function') {
+                    try { 
+                      e.target.setPlaybackQuality('hd720')
+                      // If hd720 fails, try hd1080
+                      setTimeout(() => {
+                        const newQuality = e.target.getPlaybackQuality?.()
+                        if (newQuality !== 'hd720' && newQuality !== 'hd1080' && typeof e.target.setPlaybackQuality === 'function') {
+                          try { e.target.setPlaybackQuality('hd1080') } catch {}
+                        }
+                      }, 500)
+                    } catch {}
+                  }
                 }
               } catch {}
             }, 100)
@@ -357,7 +377,7 @@ export default function Folder() {
     <section id="projects" className="py-20">
       <div className="mx-auto max-w-5xl px-6 mt-20">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-semibold">My Projects</h2>
+          <h2 className="text-4xl font-semibold">Projects</h2>
           <p className="mt-3 text-gray-500 dark:text-muted-foreground max-w-2xl mx-auto">
             Real projects that reflect our attention to detail, clear communication, and the measurable value we deliver from first sketch to final handover.
           </p>
@@ -469,8 +489,9 @@ export default function Folder() {
                           src={`https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`}
                           alt={video.alt}
                           fill
+                          priority
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          sizes="(max-width: 1024px) 100vw, 33vw"
+                          sizes="(max-width: 1024px) 50vw, 33vw"
                         />
                       ) : (
                         <video
@@ -532,21 +553,23 @@ export default function Folder() {
       </div>
 
       {imageModal && (
-        <div aria-modal role="dialog" className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6" onClick={() => { setImageModal(null); setVideoModal(null); }}>
-          <div
-            className="absolute inset-0 bg-white/40 dark:bg-black/60 backdrop-blur-sm cursor-pointer"
-            role="button"
-            tabIndex={0}
-            onClick={() => { setImageModal(null); setVideoModal(null); }}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') { setImageModal(null); setVideoModal(null); } }}
-            aria-label="Close image modal"
-          />
-          <div className="relative z-10 max-w-full max-h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-            <div style={{ width: 'min(90vw, 1200px)', height: '80vh', position: 'relative', marginTop: '4rem' }} className="shadow-lg">
+        <div
+          aria-modal
+          role="dialog"
+          tabIndex={-1}
+          className="fixed inset-0 z-50 bg-white/40 dark:bg-black/60 backdrop-blur-sm"
+          onClick={() => setImageModal(null)}
+          onKeyDown={(e) => { if (e.key === 'Escape') setImageModal(null); }}
+        >
+          <div className="fixed inset-0 flex items-center justify-center px-4 py-6">
+            <div
+              style={{ width: 'min(90vw, 1200px)', height: '80vh', position: 'relative', marginTop: '4rem' }}
+              className="shadow-lg"
+            >
               <Image src={imageModal.src} alt={imageModal.alt} fill className="object-contain" />
               <button
-                onClick={() => { setImageModal(null); setVideoModal(null); }}
-                className="absolute top-3 right-3 z-[70] px-3 py-1 rounded-full bg-white/20 hover:bg-white/40 text-white text-sm font-medium transition-colors backdrop-blur-sm"
+                onClick={() => setImageModal(null)}
+                className="absolute top-3 right-3 z-[70] px-3 py-1 rounded-full border-2 border-orange-500 text-orange-500 text-sm font-medium transition-colors backdrop-blur-sm hover:bg-orange-500/10"
                 aria-label="Close image"
               >
                 Close
@@ -557,17 +580,19 @@ export default function Folder() {
       )}
 
       {videoModal && (
-        <div aria-modal role="dialog" className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6" onClick={() => setVideoModal(null)}>
-          <div
-            className="absolute inset-0 bg-white/40 dark:bg-black/60 backdrop-blur-sm cursor-pointer"
-            role="button"
-            tabIndex={0}
-            onClick={() => setVideoModal(null)}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') setVideoModal(null); }}
-            aria-label="Close video modal"
-          />
-          <div className="relative z-10 max-w-full max-h-full flex flex-col items-center justify-center" onClick={(e) => e.stopPropagation()}>
-            <div style={{ width: 'min(96vw, 1400px)', height: '85vh', aspectRatio: '16/9', position: 'relative', overflow: 'hidden', marginTop: '4rem' }} className="shadow-lg">
+        <div
+          aria-modal
+          role="dialog"
+          tabIndex={-1}
+          className="fixed inset-0 z-50 bg-white/40 dark:bg-black/60 backdrop-blur-sm"
+          onClick={() => setVideoModal(null)}
+          onKeyDown={(e) => { if (e.key === 'Escape') setVideoModal(null); }}
+        >
+          <div className="fixed inset-0 flex flex-col items-center justify-center px-4 py-6">
+            <div
+              style={{ width: 'min(96vw, 1400px)', height: '85vh', aspectRatio: '16/9', position: 'relative', overflow: 'hidden', marginTop: '4rem' }}
+              className="shadow-lg"
+            >
               {videoModal.youtubeId ? (
                 <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                   <div id="yt-player" style={{ width: '130%', height: '130%', marginLeft: '-15%', marginTop: '-15%', position: 'relative' }} />
@@ -594,7 +619,7 @@ export default function Folder() {
               )}
               <button
                 onClick={() => setVideoModal(null)}
-                className="absolute top-3 right-3 z-[70] px-3 py-1 rounded-full bg-white/20 hover:bg-white/40 text-white text-sm font-medium transition-colors backdrop-blur-sm"
+                className="absolute top-3 right-3 z-[70] px-3 py-1 rounded-full border-2 border-orange-500 text-orange-500 text-sm font-medium transition-colors backdrop-blur-sm hover:bg-orange-500/10"
                 aria-label="Close video"
               >
                 Close
