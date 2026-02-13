@@ -65,6 +65,19 @@ export default function Folder() {
   const [currentPage, setCurrentPage] = useState(0)
   const [mediaType, setMediaType] = useState<"images" | "videos">("images")
   
+  // Hide YouTube player's big play button on mount
+  useEffect(() => {
+    const style = document.createElement('style')
+    style.textContent = `
+      .ytp-big-play-button,
+      .ytp-large-play-button {
+        display: none !important;
+      }
+    `
+    document.head.appendChild(style)
+    return () => style.remove()
+  }, [])
+  
   // Player state for custom controls - must be declared before effects
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const ytPlayerRef = useRef<YTPlayer | null>(null)
