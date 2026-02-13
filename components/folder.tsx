@@ -55,7 +55,8 @@ const IMAGES: ImageItem[] = [
 ]
 
 const VIDEOS: VideoItem[] = [
-  { src: "https://youtube.com/shorts/cXu5UOszOyU?si=cTg-2m3M5tDG5TdZ", youtubeId: "cXu5UOszOyU", title: "Short", alt: "Short" },
+  // use the regular YouTube watch URL (or rely on youtubeId) — avoids loading YouTube Shorts UI/watermark
+  { src: "https://www.youtube.com/watch?v=cXu5UOszOyU", youtubeId: "cXu5UOszOyU", title: "Short", alt: "Short" },
 ]
 
 export default function Folder() {
@@ -160,13 +161,14 @@ export default function Folder() {
       new (window as unknown as { YT: { Player: new (arg0: string, arg1: unknown) => YTPlayer } }).YT.Player('yt-player', {
         videoId: videoModal.youtubeId,
         playerVars: {
-          autoplay: 1,
+          autoplay: 1,            // auto-play when ready
           controls: 0,            // hide YouTube native controls
           modestbranding: 1,      // reduce branding
           rel: 0,                 // avoid external recommendations
           playsinline: 1,
           iv_load_policy: 3,      // disable annotations
-          vq: 'hd720'             // prefer 720p+
+          fs: 0,                  // disable fullscreen button
+          vq: 'hd720'             // ENFORCE 720p minimum - never drop below 720p
         },
         events: {
           onReady: (e: { target: YTPlayer }) => {
@@ -176,7 +178,9 @@ export default function Folder() {
             // set duration and start polling current time for custom seekbar
             const dur = e.target.getDuration() || 0
             setDuration(dur)
-            setIsPlaying(true)
+            setIsPlaying(false)  // keep as not playing until user clicks play
+            // Auto-play when ready
+            e.target.playVideo()
 
             if (pollRef.current) window.clearInterval(pollRef.current)
             pollRef.current = window.setInterval(() => {
@@ -185,23 +189,26 @@ export default function Folder() {
                 const t = e.target.getCurrentTime()
                 setCurrentTime(t)
                 
-                // Enforce 720p quality strictly - check every 250ms and reapply if downscaled
+                // STRICT 720p: check every 100ms, block any quality below hd720
                 const currentQuality = e.target.getPlaybackQuality?.() || ''
-                if (currentQuality !== 'hd720' && typeof e.target.setPlaybackQuality === 'function') {
+                if (currentQuality !== 'hd720' && currentQuality !== 'hd1080' && currentQuality !== 'highres' && typeof e.target.setPlaybackQuality === 'function') {
                   try { e.target.setPlaybackQuality('hd720') } catch {}
                 }
               } catch {}
-            }, 250)
+            }, 100)
           },
           onStateChange: (ev: { data: number; target: YTPlayer }) => {
-            // 1 playing, 2 paused, 0 ended
+            // 1 playing, 2 paused, 0 ended, 3 buffering
             if (ev.data === 1) {
               setIsPlaying(true)
-              // Aggressively enforce 720p whenever playback resumes/starts
+              // CRITICAL: Force 720p the INSTANT video starts playing
               try { if (typeof ev.target.setPlaybackQuality === 'function') ev.target.setPlaybackQuality('hd720') } catch {}
             } else if (ev.data === 2) {
               // paused - just update state, video stays visible
               setIsPlaying(false)
+            } else if (ev.data === 3) {
+              // buffering - ensure 720p before buffering
+              try { if (typeof ev.target.setPlaybackQuality === 'function') ev.target.setPlaybackQuality('hd720') } catch {}
             } else if (ev.data === 0) {
               // video ended - auto close
               setVideoModal(null)
