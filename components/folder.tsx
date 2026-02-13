@@ -288,6 +288,20 @@ export default function Folder() {
   const paginatedVideos = VIDEOS.slice(currentPage * itemsPerPage, currentPage * itemsPerPage + itemsPerPage)
   const totalVideoPages = Math.ceil(VIDEOS.length / itemsPerPage)
 
+  // Pagination window for image pages (show up to 5 centered buttons)
+  const maxImagePageButtons = 5
+  const visibleImagePageIndexes = (() => {
+    if (totalImagePages <= maxImagePageButtons) return Array.from({ length: totalImagePages }, (_, i) => i)
+    const half = Math.floor(maxImagePageButtons / 2)
+    let start = Math.max(0, currentPage - half)
+    let end = start + maxImagePageButtons - 1
+    if (end > totalImagePages - 1) {
+      end = totalImagePages - 1
+      start = end - (maxImagePageButtons - 1)
+    }
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i)
+  })()
+
   const formatTime = (s: number) => {
     if (!s || !isFinite(s)) return '0:00'
     const mm = Math.floor(s / 60)
@@ -379,7 +393,7 @@ export default function Folder() {
                 <button
                   key={media.src ?? `${media.title}-${idx}`}
                   onClick={() => { setImageModal(media); setVideoModal(null); }}
-                  className="group relative h-40 overflow-hidden bg-muted hover:shadow-lg transition-shadow duration-300 rounded-sm"
+                  className="group relative h-40 overflow-hidden bg-muted hover:shadow-lg transition-shadow duration-300 rounded-none"
                 >
                   <Image
                     src={media.src}
@@ -390,7 +404,7 @@ export default function Folder() {
                   />
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 dark:bg-black/60 dark:group-hover:bg-black/70 transition-colors pointer-events-none" />
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    <span className="px-3 py-1 bg-white/90 dark:bg-black/80 text-black dark:text-white text-xs font-medium rounded-sm">View</span>
+                    <span className="px-3 py-1 bg-white/90 dark:bg-black/80 text-black dark:text-white text-xs font-medium rounded-none">View</span>
                   </div>
                 </button>
               ))}
@@ -409,7 +423,7 @@ export default function Folder() {
                 </button>
 
                 <div className="flex items-center gap-2">
-                  {Array.from({ length: totalImagePages }).map((_, idx) => (
+                  {visibleImagePageIndexes.map((idx) => (
                     <button
                       key={idx}
                       onClick={() => setCurrentPage(idx)}
@@ -448,7 +462,7 @@ export default function Folder() {
                     <button
                       key={video.src ?? `${video.title}-${idx}`}
                       onClick={() => { setVideoModal(video); setImageModal(null); }}
-                      className="group relative h-40 overflow-hidden bg-muted hover:shadow-lg transition-shadow duration-300 rounded-sm"
+                      className="group relative h-40 overflow-hidden bg-muted hover:shadow-lg transition-shadow duration-300 rounded-none"
                     >
                       {video.youtubeId ? (
                         <Image
@@ -467,7 +481,7 @@ export default function Folder() {
                       )}
                       <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 dark:bg-black/60 dark:group-hover:bg-black/70 transition-colors pointer-events-none" />
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                        <span className="px-3 py-1 bg-white/90 dark:bg-black/80 text-black dark:text-white text-xs font-medium rounded-sm">Play</span>
+                        <span className="px-3 py-1 bg-white/90 dark:bg-black/80 text-black dark:text-white text-xs font-medium rounded-none">Play</span>
                       </div>
                     </button>
                   ))}
@@ -528,7 +542,7 @@ export default function Folder() {
             aria-label="Close image modal"
           />
           <div className="relative z-10 max-w-full max-h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-            <div style={{ width: 'min(90vw, 1200px)', height: '80vh', position: 'relative' }} className="shadow-lg">
+            <div style={{ width: 'min(90vw, 1200px)', height: '80vh', position: 'relative', marginTop: '4rem' }} className="shadow-lg">
               <Image src={imageModal.src} alt={imageModal.alt} fill className="object-contain" />
               <button
                 onClick={() => { setImageModal(null); setVideoModal(null); }}
