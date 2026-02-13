@@ -43,13 +43,7 @@ const IMAGES: ImageItem[] = [
 ]
 
 const VIDEOS: VideoItem[] = [
-  { src: "https://youtube.com/shorts/RCuuUrF3xgo", youtubeId: "RCuuUrF3xgo", title: "Short", alt: "Short" },
-  { src: "https://youtube.com/shorts/iW-WGNt2siA", youtubeId: "iW-WGNt2siA", title: "Short", alt: "Short" },
-  { src: "https://youtube.com/shorts/H0YvNCkIvZg", youtubeId: "H0YvNCkIvZg", title: "Short", alt: "Short" },
-  { src: "https://youtube.com/shorts/gxT7amKRzgc", youtubeId: "gxT7amKRzgc", title: "Short", alt: "Short" },
-  { src: "https://youtube.com/shorts/dokOYgXiD_Q", youtubeId: "dokOYgXiD_Q", title: "Short", alt: "Short" },
-  { src: "https://youtube.com/shorts/sDkGsCeZOAk", youtubeId: "sDkGsCeZOAk", title: "Short", alt: "Short" },
-  { src: "https://youtube.com/shorts/EF09xe7gYI8", youtubeId: "EF09xe7gYI8", title: "Short", alt: "Short" },
+  { src: "https://youtube.com/shorts/cXu5UOszOyU?si=cTg-2m3M5tDG5TdZ", youtubeId: "cXu5UOszOyU", title: "Short", alt: "Short" },
 ]
 
 export default function Folder() {
@@ -59,6 +53,16 @@ export default function Folder() {
   const [currentPage, setCurrentPage] = useState(0)
   const [mediaType, setMediaType] = useState<"images" | "videos">("images")
   
+  // Player state for custom controls - must be declared before effects
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const ytPlayerRef = useRef<{ destroy: () => void; getCurrentTime: () => number; getDuration: () => number; pauseVideo: () => void; playVideo: () => void; seekTo: (time: number, allowSeekAhead: boolean) => void; getPlayerState: () => number } | null>(null)
+  const pollRef = useRef<number | null>(null)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [ytPosterVisible, setYtPosterVisible] = useState(false)
+  const seekingRef = useRef(false)
+  
   // Disable scroll when video modal is open
   useEffect(() => {
     if (videoModal) {
@@ -66,9 +70,11 @@ export default function Folder() {
     } else {
       document.body.style.overflow = 'unset'
     }
+    if (!videoModal) setYtPosterVisible(false)
     
     return () => {
       document.body.style.overflow = 'unset'
+      setYtPosterVisible(false)
     }
   }, [videoModal])
 
@@ -90,17 +96,20 @@ export default function Folder() {
     v.addEventListener('pause', onPause)
 
     return () => {
-      v.removeEventListener('timeupdate', onTime)
-      v.removeEventListener('loadedmetadata', onLoaded)
-      v.removeEventListener('play', onPlay)
-      v.removeEventListener('pause', onPause)
+      if (!v) return
+      try {
+        v.removeEventListener('timeupdate', onTime)
+        v.removeEventListener('loadedmetadata', onLoaded)
+        v.removeEventListener('play', onPlay)
+        v.removeEventListener('pause', onPause)
+      } catch {}
     }
   }, [videoModal])
 
-  // YouTube IFrame API setup for custom controls
+  // YouTube IFrame API setup for custom controls (forces 720p+ and hides YouTube UI)
   useEffect(() => {
     if (!videoModal?.youtubeId) {
-      // destroy any existing YT player
+      // cleanup existing player when not showing a YouTube modal
       if (ytPlayerRef.current?.destroy) {
         try { ytPlayerRef.current.destroy() } catch {}
         ytPlayerRef.current = null
@@ -112,6 +121,8 @@ export default function Folder() {
       return
     }
 
+    let mounted = true
+
     const loadYT = () => new Promise<void>((resolve) => {
       if (typeof window === 'undefined') return resolve()
       if ((window as any).YT && (window as any).YT.Player) return resolve()
@@ -122,34 +133,61 @@ export default function Folder() {
       ;(window as any).onYouTubeIframeAPIReady = () => resolve()
     })
 
-    let player: any = null
-    let mounted = true
-
     loadYT().then(() => {
       if (!mounted) return
-      player = new (window as any).YT.Player('yt-player', {
+      const player = new (window as any).YT.Player('yt-player', {
         videoId: videoModal.youtubeId,
-        playerVars: { autoplay: 1, controls: 0, modestbranding: 1, rel: 0, playsinline: 1 },
+        playerVars: {
+          autoplay: 1,
+          controls: 0,            // hide YouTube native controls
+          modestbranding: 1,      // reduce branding
+          rel: 0,                 // avoid external recommendations
+          playsinline: 1,
+          iv_load_policy: 3,      // disable annotations
+          vq: 'hd720'             // prefer 720p+
+        },
         events: {
           onReady: (e: any) => {
-            ytPlayerRef.current = player = e.target
-            const dur = player.getDuration() || 0
+            ytPlayerRef.current = e.target
+            try { if (typeof e.target.setPlaybackQuality === 'function') e.target.setPlaybackQuality('hd720') } catch (err) {}
+
+            // set duration and start polling current time for custom seekbar
+            const dur = e.target.getDuration() || 0
             setDuration(dur)
             setIsPlaying(true)
 
-            // poll current time
+            if (pollRef.current) window.clearInterval(pollRef.current)
             pollRef.current = window.setInterval(() => {
-              if (!player || seekingRef.current) return
-              try {
-                const t = player.getCurrentTime()
+              if (!e.target || seekingRef.current) return
+              try { 
+                const t = e.target.getCurrentTime()
                 setCurrentTime(t)
+                
+                // Enforce 720p quality strictly - check every 250ms and reapply if downscaled
+                const currentQuality = e.target.getPlaybackQuality?.() || ''
+                if (currentQuality !== 'hd720' && typeof e.target.setPlaybackQuality === 'function') {
+                  try { e.target.setPlaybackQuality('hd720') } catch (err) {}
+                }
               } catch (err) {}
             }, 250)
           },
           onStateChange: (ev: any) => {
             // 1 playing, 2 paused, 0 ended
-            if (ev.data === 1) setIsPlaying(true)
-            else setIsPlaying(false)
+            if (ev.data === 1) {
+              setIsPlaying(true)
+              setYtPosterVisible(false)
+              // Aggressively enforce 720p whenever playback resumes/starts
+              try { if (typeof ev.target.setPlaybackQuality === 'function') ev.target.setPlaybackQuality('hd720') } catch (err) {}
+            } else if (ev.data === 2) {
+              // paused - show poster, hide iframe
+              setIsPlaying(false)
+              setYtPosterVisible(true)
+            } else if (ev.data === 0) {
+              // video ended - auto close
+              setVideoModal(null)
+            } else {
+              setIsPlaying(false)
+            }
             if (ev.data === 0) setCurrentTime(duration)
           }
         }
@@ -158,17 +196,17 @@ export default function Folder() {
 
     return () => {
       mounted = false
-      if (pollRef.current) {
+      if (pollRef.current) { 
         window.clearInterval(pollRef.current)
-        pollRef.current = null
+        pollRef.current = null 
       }
       if (ytPlayerRef.current?.destroy) {
         try { ytPlayerRef.current.destroy() } catch {}
-        ytPlayerRef.current = null
       }
+      ytPlayerRef.current = null
     }
   }, [videoModal])
-  
+
   const handleMediaTypeChange = (type: "images" | "videos") => {
     setMediaType(type)
     setCurrentPage(0)
@@ -179,36 +217,6 @@ export default function Folder() {
   const totalImagePages = Math.ceil(IMAGES.length / itemsPerPage)
   const paginatedVideos = VIDEOS.slice(currentPage * itemsPerPage, currentPage * itemsPerPage + itemsPerPage)
   const totalVideoPages = Math.ceil(VIDEOS.length / itemsPerPage)
-
-  // Player state for custom controls
-  const videoRef = useRef<HTMLVideoElement | null>(null)
-  const ytPlayerRef = useRef<any | null>(null)
-  const pollRef = useRef<number | null>(null)
-  const [currentTime, setCurrentTime] = useState(0)
-  const [duration, setDuration] = useState(0)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const seekingRef = useRef(false)
-  // overlay top offset so modal backdrop doesn't cover the header
-  const [overlayTop, setOverlayTop] = useState(0)
-
-  useEffect(() => {
-    const update = () => {
-      const headerEl = typeof document !== 'undefined' ? document.querySelector('header') : null
-      const h = headerEl ? (headerEl as HTMLElement).getBoundingClientRect().height : 0
-      setOverlayTop(h)
-    }
-
-    update()
-    window.addEventListener('resize', update)
-
-    const mo = typeof MutationObserver !== 'undefined' ? new MutationObserver(update) : null
-    if (mo) mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
-
-    return () => {
-      window.removeEventListener('resize', update)
-      if (mo) mo.disconnect()
-    }
-  }, [])
 
   const formatTime = (s: number) => {
     if (!s || !isFinite(s)) return '0:00'
@@ -227,8 +235,13 @@ export default function Folder() {
       if (state === 1) {
         p.pauseVideo()
         setIsPlaying(false)
+        setYtPosterVisible(true) // replace iframe with poster when paused
       } else {
+        // if poster visible, hide it and resume
+        setYtPosterVisible(false)
+        try { if (typeof p.seekTo === 'function') p.seekTo(currentTime, true) } catch {}
         p.playVideo()
+        try { if (typeof p.setPlaybackQuality === 'function') p.setPlaybackQuality('hd720') } catch {}
         setIsPlaying(true)
       }
     } else {
@@ -372,7 +385,7 @@ export default function Folder() {
                       {video.youtubeId ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
                         <img
-                          src={`https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`}
+                          src={`https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`}
                           alt={video.alt}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           loading="lazy"
@@ -448,65 +461,73 @@ export default function Folder() {
       )}
 
       {videoModal && (
-        <div aria-modal role="dialog" className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 bg-white dark:bg-black" onClick={() => setVideoModal(null)}>
-          <div
-            className="absolute left-0 right-0 bottom-0 bg-white dark:bg-black backdrop-blur-sm"
-            style={{ top: overlayTop }}
-          />
-          <div className="relative z-10 max-w-full max-h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={() => setVideoModal(null)}
-              className="absolute top-22 right-4 z-[60] px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all text-sm font-medium"
-              aria-label="Close video"
-            >
-              Close
-            </button>
-            <div style={{ width: 'min(90vw, 1200px)' }} className="flex flex-col items-center gap-3">
+        <div aria-modal role="dialog" className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6" onClick={() => setVideoModal(null)}>
+          <div className="absolute inset-0 bg-white/40 dark:bg-black/60 backdrop-blur-sm" />
+          <div className="relative z-10 max-w-full max-h-full flex flex-col items-center justify-center" onClick={(e) => e.stopPropagation()}>
+            <div style={{ width: isPlaying ? 'min(96vw, 1400px)' : 'min(90vw, 1200px)', height: isPlaying ? '85vh' : 'auto', aspectRatio: '16/9', position: 'relative', transition: 'width 300ms ease, height 300ms ease', marginTop: isPlaying ? '6rem' : '0', overflow: 'hidden' }} className="shadow-lg">
               {videoModal.youtubeId ? (
-                <div style={{ position: 'relative', width: '100%', height: '80vh', overflow: 'hidden' }} className="shadow-lg">
-                  {/* YouTube player container (controlled via IFrame API) */}
-                  <div id="yt-player" style={{ width: '100%', height: '100%' }} />
+                <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                  {/* poster displayed when paused to hide YouTube overlays */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`https://img.youtube.com/vi/${videoModal.youtubeId}/maxresdefault.jpg`}
+                    alt="poster"
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 100, display: ytPosterVisible ? 'block' : 'none', opacity: 1 }}
+                  />
 
-                  {/* strong visual overlays kept as fallback (pointer-events:none) */}
-                  <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 160, background: theme === 'dark' ? 'black' : 'white', pointerEvents: 'none', zIndex: 50, opacity: 0.99 }} />
-                  <div aria-hidden style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 120, background: theme === 'dark' ? 'black' : 'white', pointerEvents: 'none', zIndex: 50, opacity: 0.98 }} />
-                  <div aria-hidden style={{ position: 'absolute', bottom: 12, right: 12, width: 160, height: 64, background: theme === 'dark' ? 'black' : 'white', borderRadius: 6, pointerEvents: 'none', zIndex: 52, opacity: 0.98 }} />
+                  <div id="yt-player" style={{ width: '130%', height: '130%', marginLeft: '-15%', marginTop: '-15%', position: 'relative', display: ytPosterVisible ? 'none' : 'block', visibility: ytPosterVisible ? 'hidden' : 'visible' }} />
                 </div>
               ) : (
-                <div style={{ width: '100%', maxHeight: '80vh', position: 'relative' }} className="shadow-lg">
-                  <video
-                    ref={videoRef}
-                    src={videoModal.src}
-                    className="w-full h-full object-contain bg-white dark:bg-black"
-                    playsInline
+                <video
+                  ref={videoRef}
+                  src={videoModal.src}
+                  className="w-full h-full object-cover bg-black"
+                  playsInline
+                  onTouchEnd={(e) => {
+                    // Prevent double-tap fullscreen
+                    if (e.touches.length === 0) {
+                      const now = Date.now()
+                      const lastTap = (e.currentTarget as any).lastTap || 0
+                      const timeSinceLastTap = now - lastTap
+                      if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
+                        e.preventDefault()
+                      }
+                      ;(e.currentTarget as any).lastTap = now
+                    }
+                  }}
+                />
+              )}
+              <button
+                onClick={() => setVideoModal(null)}
+                className="absolute top-3 right-3 z-[70] px-3 py-1 rounded-full bg-white/20 hover:bg-white/40 text-white text-sm font-medium transition-colors backdrop-blur-sm"
+                aria-label="Close video"
+              >
+                Close
+              </button>
+            </div>
+            {/* custom seekbar + controls */}
+            <div className="w-full max-w-[90vw] px-3 mt-3" style={{ maxWidth: isPlaying ? 'min(96vw, 1400px)' : 'min(90vw, 1200px)', transition: 'max-width 300ms ease' }}>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={togglePlay}
+                  className="px-3 py-1 rounded-md bg-primary text-primary-foreground text-sm hover:bg-primary/80 transition-colors"
+                >
+                  {isPlaying ? 'Pause' : 'Play'}
+                </button>
+
+                <div className="flex-1">
+                  <input
+                    type="range"
+                    min={0}
+                    max={duration || 0}
+                    value={currentTime}
+                    onChange={(e) => handleSeek(Number(e.target.value))}
+                    className="w-full h-2 bg-gray-300 dark:bg-zinc-700 rounded-lg accent-primary"
                   />
                 </div>
-              )}
 
-              {/* custom seekbar + controls (works for both native video and YouTube iframe) */}
-              <div className="w-full px-3">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={togglePlay}
-                    className="px-3 py-1 rounded-md bg-primary text-primary-foreground text-sm"
-                  >
-                    {isPlaying ? 'Pause' : 'Play'}
-                  </button>
-
-                  <div className="flex-1">
-                    <input
-                      type="range"
-                      min={0}
-                      max={duration || 0}
-                      value={currentTime}
-                      onChange={(e) => handleSeek(Number(e.target.value))}
-                      className="w-full h-2 bg-gray-300 dark:bg-zinc-700 rounded-lg accent-primary"
-                    />
-                  </div>
-
-                  <div className="text-xs text-muted-foreground tabular-nums">
-                    {formatTime(currentTime)} / {formatTime(duration)}
-                  </div>
+                <div className="text-xs text-muted-foreground tabular-nums">
+                  {formatTime(currentTime)} / {formatTime(duration)}
                 </div>
               </div>
             </div>
