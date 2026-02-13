@@ -33,25 +33,60 @@ interface VideoItem {
 }
 
 const IMAGES: ImageItem[] = [
-  { src: "/s1.jpeg", title: "Image 1", alt: "Image 1" },
-  { src: "/s2.jpeg", title: "Image 2", alt: "Image 2" },
-  { src: "/s3.jpeg", title: "Image 3", alt: "Image 3" },
-  { src: "/s4.jpeg", title: "Image 4", alt: "Image 4" },
-  { src: "/s5.jpeg", title: "Image 5", alt: "Image 5" },
-  { src: "/s6.jpeg", title: "Image 6", alt: "Image 6" },
-  { src: "/s7.jpeg", title: "Image 7", alt: "Image 7" },
-  { src: "/w1.jpeg", title: "Image 8", alt: "Image 8" },
-  { src: "/w2.jpeg", title: "Image 9", alt: "Image 9" },
-  { src: "/w3.jpeg", title: "Image 10", alt: "Image 10" },
-  { src: "/w4.jpeg", title: "Image 11", alt: "Image 11" },
-  { src: "/w5.jpeg", title: "Image 12", alt: "Image 12" },
-  { src: "/w6.jpeg", title: "Image 13", alt: "Image 13" },
-  { src: "/w7.jpeg", title: "Image 14", alt: "Image 14" },
-  { src: "/w8.jpeg", title: "Image 15", alt: "Image 15" },
-  { src: "/w9.jpeg", title: "Image 16", alt: "Image 16" },
-  { src: "/w10.jpeg", title: "Image 17", alt: "Image 17" },
-  { src: "/w11.jpeg", title: "Image 18", alt: "Image 18" },
-  { src: "/w12.jpeg", title: "Image 19", alt: "Image 19" },
+  { src: "/aaa1.jpg", title: "Image 1", alt: "Image 1" },
+  { src: "/aaa2.jpg", title: "Image 2", alt: "Image 2" },
+  { src: "/aaa3.jpg", title: "Image 3", alt: "Image 3" },
+  { src: "/aaa4.jpg", title: "Image 4", alt: "Image 4" },
+  { src: "/aaa5.jpg", title: "Image 5", alt: "Image 5" },
+  { src: "/aaa6.jpg", title: "Image 6", alt: "Image 6" },
+  { src: "/aaa7.jpg", title: "Image 7", alt: "Image 7" },
+  { src: "/aaa8.jpg", title: "Image 8", alt: "Image 8" },
+  { src: "/aaa9.jpg", title: "Image 9", alt: "Image 9" },
+  { src: "/aaa10.jpg", title: "Image 10", alt: "Image 10" },
+  { src: "/aaa11.jpg", title: "Image 11", alt: "Image 11" },
+  { src: "/aaa12.jpg", title: "Image 12", alt: "Image 12" },
+  { src: "/aaa13.jpg", title: "Image 13", alt: "Image 13" },
+  { src: "/aaa14.jpg", title: "Image 14", alt: "Image 14" },
+  { src: "/aaa15.jpg", title: "Image 15", alt: "Image 15" },
+  { src: "/aaa16.jpg", title: "Image 16", alt: "Image 16" },
+  { src: "/aaa17.jpg", title: "Image 17", alt: "Image 17" },
+  { src: "/aaa18.jpg", title: "Image 18", alt: "Image 18" },
+  { src: "/aaa19.jpg", title: "Image 19", alt: "Image 19" },
+  { src: "/aaa20.jpg", title: "Image 20", alt: "Image 20" },
+  { src: "/aaa21.jpg", title: "Image 21", alt: "Image 21" },
+  { src: "/aaa22.jpg", title: "Image 22", alt: "Image 22" },
+  { src: "/aaa23.jpg", title: "Image 23", alt: "Image 23" },
+  { src: "/aaa24.jpg", title: "Image 24", alt: "Image 24" },
+  { src: "/aaa25.jpg", title: "Image 25", alt: "Image 25" },
+  { src: "/aaa26.jpg", title: "Image 26", alt: "Image 26" },
+  { src: "/aaa27.jpg", title: "Image 27", alt: "Image 27" },
+  { src: "/aaa28.jpg", title: "Image 28", alt: "Image 28" },
+  { src: "/aaa29.jpg", title: "Image 29", alt: "Image 29" },
+  { src: "/aaa30.jpg", title: "Image 30", alt: "Image 30" },
+  { src: "/aaa31.jpg", title: "Image 31", alt: "Image 31" },
+  { src: "/aaa32.jpg", title: "Image 32", alt: "Image 32" },
+  { src: "/aaa33.jpg", title: "Image 33", alt: "Image 33" },
+  { src: "/aaa34.jpg", title: "Image 34", alt: "Image 34" },
+  { src: "/aaa35.jpg", title: "Image 35", alt: "Image 35" },
+  { src: "/aaa36.jpg", title: "Image 36", alt: "Image 36" },
+  { src: "/aaa37.jpg", title: "Image 37", alt: "Image 37" },
+  { src: "/aaa38.jpg", title: "Image 38", alt: "Image 38" },
+  { src: "/aaa39.jpg", title: "Image 39", alt: "Image 39" },
+  { src: "/aaa40.jpg", title: "Image 40", alt: "Image 40" },
+  { src: "/aaa41.jpg", title: "Image 41", alt: "Image 41" },
+  { src: "/aaa42.jpg", title: "Image 42", alt: "Image 42" },
+  { src: "/aaa43.jpg", title: "Image 43", alt: "Image 43" },
+  { src: "/aaa44.jpg", title: "Image 44", alt: "Image 44" },
+  { src: "/aaa45.jpg", title: "Image 45", alt: "Image 45" },
+  { src: "/aaa46.jpg", title: "Image 46", alt: "Image 46" },
+  { src: "/aaa47.jpg", title: "Image 47", alt: "Image 47" },
+  { src: "/aaa48.jpg", title: "Image 48", alt: "Image 48" },
+  { src: "/aaa49.jpg", title: "Image 49", alt: "Image 49" },
+  { src: "/aaa50.jpg", title: "Image 50", alt: "Image 50" },
+  { src: "/aaa51.jpg", title: "Image 51", alt: "Image 51" },
+  { src: "/aaa52.jpg", title: "Image 52", alt: "Image 52" },
+  { src: "/aaa53.jpg", title: "Image 53", alt: "Image 53" },
+  { src: "/aaa54.jpg", title: "Image 54", alt: "Image 54" },
 ]
 
 const VIDEOS: VideoItem[] = [
@@ -88,15 +123,23 @@ export default function Folder() {
   const [isPlaying, setIsPlaying] = useState(false)
   const seekingRef = useRef(false)
   
-  // Disable scroll when video modal is open
+  // Disable scroll when video modal is open & close modals on Escape
   useEffect(() => {
     if (videoModal) {
       document.body.style.overflow = 'hidden'
     } else {
       document.body.style.overflow = 'unset'
     }
-    
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setVideoModal(null)
+        setImageModal(null)
+      }
+    }
+    window.addEventListener('keydown', onKey)
     return () => {
+      window.removeEventListener('keydown', onKey)
       document.body.style.overflow = 'unset'
     }
   }, [videoModal])
@@ -335,7 +378,7 @@ export default function Folder() {
               {paginatedImages.map((media, idx) => (
                 <button
                   key={media.src ?? `${media.title}-${idx}`}
-                  onClick={() => setImageModal(media)}
+                  onClick={() => { setImageModal(media); setVideoModal(null); }}
                   className="group relative h-40 overflow-hidden bg-muted hover:shadow-lg transition-shadow duration-300 rounded-sm"
                 >
                   <Image
@@ -404,16 +447,16 @@ export default function Folder() {
                   {paginatedVideos.map((video, idx) => (
                     <button
                       key={video.src ?? `${video.title}-${idx}`}
-                      onClick={() => setVideoModal(video)}
+                      onClick={() => { setVideoModal(video); setImageModal(null); }}
                       className="group relative h-40 overflow-hidden bg-muted hover:shadow-lg transition-shadow duration-300 rounded-sm"
                     >
                       {video.youtubeId ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img
+                        <Image
                           src={`https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`}
                           alt={video.alt}
+                          fill
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          loading="lazy"
+                          sizes="(max-width: 1024px) 100vw, 33vw"
                         />
                       ) : (
                         <video
@@ -475,11 +518,25 @@ export default function Folder() {
       </div>
 
       {imageModal && (
-        <div aria-modal role="dialog" className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6" onClick={() => setImageModal(null)}>
-          <div className="absolute inset-0 bg-white/40 dark:bg-black/60 backdrop-blur-sm" />
+        <div aria-modal role="dialog" className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6" onClick={() => { setImageModal(null); setVideoModal(null); }}>
+          <div
+            className="absolute inset-0 bg-white/40 dark:bg-black/60 backdrop-blur-sm cursor-pointer"
+            role="button"
+            tabIndex={0}
+            onClick={() => { setImageModal(null); setVideoModal(null); }}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') { setImageModal(null); setVideoModal(null); } }}
+            aria-label="Close image modal"
+          />
           <div className="relative z-10 max-w-full max-h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
             <div style={{ width: 'min(90vw, 1200px)', height: '80vh', position: 'relative' }} className="shadow-lg">
               <Image src={imageModal.src} alt={imageModal.alt} fill className="object-contain" />
+              <button
+                onClick={() => { setImageModal(null); setVideoModal(null); }}
+                className="absolute top-3 right-3 z-[70] px-3 py-1 rounded-full bg-white/20 hover:bg-white/40 text-white text-sm font-medium transition-colors backdrop-blur-sm"
+                aria-label="Close image"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
@@ -487,7 +544,14 @@ export default function Folder() {
 
       {videoModal && (
         <div aria-modal role="dialog" className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6" onClick={() => setVideoModal(null)}>
-          <div className="absolute inset-0 bg-white/40 dark:bg-black/60 backdrop-blur-sm" />
+          <div
+            className="absolute inset-0 bg-white/40 dark:bg-black/60 backdrop-blur-sm cursor-pointer"
+            role="button"
+            tabIndex={0}
+            onClick={() => setVideoModal(null)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') setVideoModal(null); }}
+            aria-label="Close video modal"
+          />
           <div className="relative z-10 max-w-full max-h-full flex flex-col items-center justify-center" onClick={(e) => e.stopPropagation()}>
             <div style={{ width: 'min(96vw, 1400px)', height: '85vh', aspectRatio: '16/9', position: 'relative', overflow: 'hidden', marginTop: '4rem' }} className="shadow-lg">
               {videoModal.youtubeId ? (

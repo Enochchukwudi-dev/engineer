@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { Building, Droplets, Palette, Grid, ClipboardList, Ruler, BrickWallShield, BrickWall, DropletOff } from 'lucide-react'
 import { motion } from 'motion/react'
 
@@ -82,7 +83,14 @@ export default function Features() {
                     <div aria-modal role="dialog" className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6" onClick={() => setSelectedImage(null)}>
                       <div className="absolute inset-0 bg-white/40 dark:bg-black/60 backdrop-blur-sm" />
                       <div className="relative z-10 max-w-full max-h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-                        <img src={selectedImage} alt="Service" className="max-w-[90vw] max-h-[80vh] object-contain shadow-lg" />
+                        <Image 
+                          src={selectedImage} 
+                          alt="Service" 
+                          width={1280}
+                          height={800}
+                          className="max-w-[90vw] max-h-[80vh] object-contain shadow-lg"
+                          sizes="(max-width: 640px) 90vw, (max-width: 1024px) 85vw, 1280px"
+                        />
                       </div>
                     </div>
                 )}

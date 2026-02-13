@@ -1,6 +1,7 @@
 "use client"
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Construction, FilePenLine, Hammer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { TextEffect } from '@/components/ui/text-effect'
@@ -113,13 +114,13 @@ export default function HeroSection() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="sm:mx-auto lg:mr-auto lg:mt-0 relative">
             {prefersReducedMotion ? (
-              <img
+              <Image
                 src={BG_IMAGES[bgIndex].src}
                 alt=""
                 width={700}
                 height={620}
                 className="absolute left-1/2 -translate-x-1/2 sm:left-[65%] sm:-translate-x-1/2 -top-12 sm:top-4 -z-10 opacity-30 sm:opacity-50 dark:opacity-30 pointer-events-none select-none w-[120%] sm:w-auto max-w-none sm:max-w-[65%] md:max-w-[75%] lg:max-w-[85%] xl:max-w-[95%]"
-                loading="eager"
+                priority
                 aria-hidden
               />
             ) : (
@@ -133,12 +134,12 @@ export default function HeroSection() {
                   className="absolute left-1/2 -translate-x-1/2 sm:left-[65%] sm:-translate-x-1/2 -top-12 sm:top-4 -z-10 pointer-events-none select-none w-[120%] sm:w-auto max-w-none sm:max-w-[65%] md:max-w-[75%] lg:max-w-[85%] xl:max-w-[95%]"
                   aria-hidden
                 >
-                  <img
+                  <Image
                     src={BG_IMAGES[bgIndex].src}
                     alt=""
                     width={700}
                     height={620}
-                    loading="eager"
+                    priority
                     className="w-full h-auto"
                   />
                 </motion.div>
@@ -222,7 +223,14 @@ export default function HeroSection() {
                 <div className="flex gap-4 min-w-[200%] marquee-track" aria-hidden>
                   {MARQUEE_IMAGES.concat(MARQUEE_IMAGES).map((img, idx) => (
                     <div key={`${img.src}-${idx}`} className="w-[23%] flex-shrink-0 relative z-20 rounded-sm overflow-hidden border bg-background shadow-sm">
-                      <img loading="eager" src={img.src} alt={img.alt} width={800} height={540} className="w-full h-40 md:h-56 lg:h-64 object-cover" />
+                      <Image 
+                        src={img.src} 
+                        alt={img.alt} 
+                        width={800} 
+                        height={540} 
+                        className="w-full h-40 md:h-56 lg:h-64 object-cover"
+                        sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 23vw"
+                      />
                     </div>
                   ))}
                 </div>

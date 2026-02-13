@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Mail, Phone } from "lucide-react"
 import { Button } from "./ui/button"
 import { Card } from "./ui/card"
@@ -32,7 +33,7 @@ export default function ContactUs() {
           <Card className="py-12 flex flex-col items-center text-center dark:bg-slate-900/20 border-0">
             <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-muted-foreground/30">
               <div className="rounded-full bg-green-600 p-2">
-                <img src="/whatsapp.svg" alt="whatsapp" width={120} height={100} />
+                <Image src="/whatsapp.svg" alt="whatsapp" width={48} height={48} />
               </div>
             </div>
             <h3 className="font-semibold">Message on WhatsApp</h3>

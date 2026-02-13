@@ -3,9 +3,14 @@ import type { NextConfig } from "next";
 const nextConfig = {
   /* config options here */
   images: {
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
         hostname: "ik.imagekit.io",
+        protocol: "https"
+      },
+      {
+        hostname: "img.youtube.com",
         protocol: "https"
       }
     ]
