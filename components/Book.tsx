@@ -26,9 +26,6 @@ export default function ContactSection() {
         phone: false
     })
 
-    // UI state while sending email
-    const [sending, setSending] = useState(false)
-
     // Validate name: minimum 3 alphabets, no numbers
     const validateName = (value: string) => {
         const nameRegex = /^[a-zA-Z\s]{3,}$/
@@ -88,7 +85,7 @@ export default function ContactSection() {
         setFormData(prev => ({ ...prev, message: e.target.value }))
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
 
         const newErrors = { name: '', phone: '', service: '' }
@@ -119,43 +116,20 @@ export default function ContactSection() {
             const serviceOption = document.querySelector(`option[value="${formData.service}"]`)
             const serviceName = serviceOption?.textContent || ''
 
-            // Prepare payload for server email
-            const payload = {
-                name: formData.name,
-                phone: formData.phone,
-                serviceName,
-                message: formData.message || '',
-                source: 'book-form'
-            }
+            // Format message for WhatsApp
+            const message = `#Consultation
+Name: ${formData.name}
+Phone No: ${formData.phone}
+Service: ${serviceName}
+${formData.message ? `Message: ${formData.message}` : ''}`
 
-            setSending(true)
-            try {
-                const res = await fetch('/api/send-email', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                })
-
-                const json = await res.json()
-                if (!res.ok) {
-                    console.error('Email API error', json)
-                    // continue — fallback is still to open WhatsApp
-                } else {
-                    // if using Ethereal test account you'll get a previewUrl — log it for dev
-                    if (json.previewUrl) console.info('Email preview:', json.previewUrl)
-                }
-            } catch (err) {
-                console.error('Failed to send email', err)
-            } finally {
-                setSending(false)
-            }
-
-            // Format message for WhatsApp (unchanged behaviour)
-            const message = `#Consultation\nName: ${formData.name}\nPhone No: ${formData.phone}\nService: ${serviceName}\n${formData.message ? `Message: ${formData.message}` : ''}`
+            // Encode message for URL
             const encodedMessage = encodeURIComponent(message)
+            
+            // WhatsApp API URL with your number
             const whatsappUrl = `https://wa.me/2348064032113?text=${encodedMessage}`
 
-            // Open WhatsApp in a new tab
+            // Open WhatsApp
             window.open(whatsappUrl, '_blank')
 
             // Reset form
@@ -260,7 +234,7 @@ export default function ContactSection() {
                             />
                         </div>
 
-                        <Button type="submit" disabled={sending}>{sending ? 'Sending...' : 'Submit'}</Button>
+                        <Button type="submit">Submit</Button>
                     </form>
                 </Card>
             </div>
