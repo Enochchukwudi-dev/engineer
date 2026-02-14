@@ -7,6 +7,7 @@ import React from 'react'
 import { cn } from '@/lib/utils'
 import { useScroll } from 'motion/react'
 import { ModeToggle } from './toggle'
+import { useRouter } from 'next/navigation'
 
 const menuItems = [
     { name: 'Home', href: '#link' },
@@ -16,6 +17,7 @@ const menuItems = [
 ]
 
 export const HeroHeader = () => {
+    const router = useRouter()
     const [menuState, setMenuState] = React.useState(false)
     const [scrolled, setScrolled] = React.useState(false)
 
@@ -29,30 +31,52 @@ export const HeroHeader = () => {
     }, [scrollYProgress])
 
     const handleNavClick = (e: React.MouseEvent, href: string) => {
+        // If user clicked Projects, close the menu and navigate client-side immediately
+        if (href === '/projects') {
+            e.preventDefault();
+            setMenuState(false);
+            router.push('/projects');
+            return;
+        }
+
+        // If user clicked Contact, close the menu and navigate client-side immediately
+        if (href === '/contact') {
+            e.preventDefault();
+            setMenuState(false);
+            router.push('/contact');
+            return;
+        }
+
         if (href.startsWith('#')) {
             e.preventDefault();
 
-            // Special case: Home should go to the very top (include header),
-            // show loader and refresh / navigate after 4s so users see the loader.
-            if (href === '#link') {
-                if (typeof window !== 'undefined') {
-                    window.dispatchEvent(new CustomEvent('show-loader'))
-                }
-
-                // Scroll to top immediately for visual feedback
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-
-                if (window.location.pathname === '/' || window.location.pathname === '') {
-                    // If already on home, reload after loader finishes
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 500);
+            // Fast client-side behavior for Services: navigate/scroll without loader
+            if (href === '#our-services') {
+                setMenuState(false);
+                if (typeof window !== 'undefined' && (window.location.pathname === '/' || window.location.pathname === '')) {
+                    const el = document.getElementById('our-services');
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 } else {
-                    // If coming from another page, navigate to home after loader finishes
-                    setTimeout(() => {
-                        window.location.href = '/';
-                    }, 500);
+                    router.push('/?scrollTo=our-services');
                 }
+                return;
+            }
+
+            // Special case: Home should go to the very top (include header).
+            // Use client-side navigation without any loader and scroll to top immediately.
+            if (href === '#link') {
+                // Close the menu immediately
+                setMenuState(false);
+
+                // If already on the homepage, just scroll to top
+                if (typeof window !== 'undefined' && (window.location.pathname === '/' || window.location.pathname === '')) {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    return;
+                }
+
+                // Navigate client-side to home (no full reload, no loader)
+                router.push('/');
+                return;
             } else {
                 const id = href.slice(1);
                 // If not on home page, navigate there first
@@ -76,25 +100,20 @@ export const HeroHeader = () => {
         setMenuState(false);
     };
 
-    const handleLogoClick = (e: React.MouseEvent) => {
-        // Show the global loader for 4s, then reload/navigate.
+    const handleLogoClick = async (e: React.MouseEvent) => {
         e.preventDefault();
-        // Trigger PageLoader via event
-        if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('show-loader'))
+        // close mobile menu immediately
+        setMenuState(false);
+
+        // Always navigate client-side to '/' (fast) and then ensure we scroll to top.
+        try {
+            await router.push('/');
+        } catch {
+            /* ignore */
         }
 
-        if (window.location.pathname === '/' || window.location.pathname === '') {
-            // Scroll to top then reload after loader finishes
+        if (typeof window !== 'undefined') {
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            setTimeout(() => {
-                window.location.reload();
-            }, 500);
-        } else {
-            // Navigate to home after loader finishes
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 500);
         }
     };
 
@@ -157,9 +176,16 @@ export const HeroHeader = () => {
                                 <Button
                                     asChild
                                     size="sm">
-                                    <Link href="/book">
+                                    <a
+                                        href="/book"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setMenuState(false);
+                                            router.push('/book');
+                                        }}
+                                    >
                                         <span>Get Quote</span>
-                                    </Link>
+                                    </a>
                                 </Button>
                                 <ModeToggle onThemeChange={() => setMenuState(false)} />
                             </div>

@@ -121,6 +121,54 @@ export default function Folder() {
     document.head.appendChild(style)
     return () => style.remove()
   }, [])
+
+  // Prefetch first gallery images + video thumbnails to warm browser cache and improve perceived load
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      // preload the first two pages worth of thumbnails (12 images)
+      IMAGES.slice(0, 12).forEach((m) => {
+        const i = new window.Image()
+        i.src = m.src
+      })
+
+      // preload first few video thumbnails (YouTube thumbnails or direct video posters)
+      VIDEOS.slice(0, 8).forEach((v) => {
+        if (v.youtubeId) {
+          const thumb = `https://img.youtube.com/vi/${v.youtubeId}/maxresdefault.jpg`
+          const i = new window.Image()
+          i.src = thumb
+        } else if (v.src) {
+          // attempt to warm browser cache for remote video file (metadata only)
+          const i = new window.Image()
+          // try to use a poster-like URL if available; fallback to fetching the video URL (may be large)
+          i.src = v.src
+        }
+      })
+
+      // preconnect / preload YouTube resources so iframe API and thumbnails load faster
+      const addLink = (rel: string, href: string, as?: string) => {
+        try {
+          const existing = document.querySelector(`link[rel="${rel}"][href="${href}"]`)
+          if (existing) return
+          const l = document.createElement('link')
+          l.rel = rel
+          l.href = href
+          if (as) (l as any).as = as
+          if (rel === 'preconnect') l.crossOrigin = ''
+          document.head.appendChild(l)
+        } catch {
+          /* ignore */
+        }
+      }
+
+      addLink('preconnect', 'https://www.youtube.com')
+      addLink('preconnect', 'https://s.ytimg.com')
+      addLink('preload', 'https://www.youtube.com/iframe_api', 'script')
+    } catch {
+      /* ignore */
+    }
+  }, [])
   
   // Player state for custom controls - must be declared before effects
   const videoRef = useRef<HTMLVideoElement | null>(null)
@@ -409,25 +457,34 @@ export default function Folder() {
         {mediaType === "images" ? (
           <>
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              {paginatedImages.map((media, idx) => (
-                <button
-                  key={media.src ?? `${media.title}-${idx}`}
-                  onClick={() => { setImageModal(media); setVideoModal(null); }}
-                  className="group relative h-40 overflow-hidden bg-muted hover:shadow-lg transition-shadow duration-300 rounded-none"
-                >
-                  <Image
-                    src={media.src}
-                    alt={media.alt}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    sizes="(max-width: 1024px) 100vw, 33vw"
-                  />
-                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 dark:bg-black/60 dark:group-hover:bg-black/70 transition-colors pointer-events-none" />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    <span className="px-3 py-1 bg-white/90 dark:bg-black/80 text-black dark:text-white text-xs font-medium rounded-none">View</span>
-                  </div>
-                </button>
-              ))}
+              {paginatedImages.map((media, idx) => {
+                const globalIndex = currentPage * itemsPerPage + idx
+                const eager = globalIndex < 6 // first page thumbnails load eagerly
+                const isPriority = globalIndex === 0 // only first overall image marked priority
+
+                return (
+                  <button
+                    key={media.src ?? `${media.title}-${idx}`}
+                    onClick={() => { setImageModal(media); setVideoModal(null); }}
+                    className="group relative h-40 overflow-hidden bg-muted hover:shadow-lg transition-shadow duration-300 rounded-none"
+                  >
+                    <Image
+                      src={media.src}
+                      alt={media.alt}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 1024px) 100vw, 33vw"
+                      loading={eager ? 'eager' : 'lazy'}
+                      fetchPriority={eager ? 'high' : 'low'}
+                      priority={isPriority}
+                    />
+                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 dark:bg-black/60 dark:group-hover:bg-black/70 transition-colors pointer-events-none" />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                      <span className="px-3 py-1 bg-white/90 dark:bg-black/80 text-black dark:text-white text-xs font-medium rounded-none">View</span>
+                    </div>
+                  </button>
+                )
+              })}
             </div>
 
             {/* Pagination Controls */}
@@ -478,34 +535,43 @@ export default function Folder() {
             ) : (
               <>
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                  {paginatedVideos.map((video, idx) => (
-                    <button
-                      key={video.src ?? `${video.title}-${idx}`}
-                      onClick={() => { setVideoModal(video); setImageModal(null); }}
-                      className="group relative h-40 overflow-hidden bg-muted hover:shadow-lg transition-shadow duration-300 rounded-none"
-                    >
-                      {video.youtubeId ? (
-                        <Image
-                          src={`https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`}
-                          alt={video.alt}
-                          fill
-                          priority
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          sizes="(max-width: 1024px) 50vw, 33vw"
-                        />
-                      ) : (
-                        <video
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        >
-                          <source src={video.src} type="video/mp4" />
-                        </video>
-                      )}
-                      <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 dark:bg-black/60 dark:group-hover:bg-black/70 transition-colors pointer-events-none" />
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                        <span className="px-3 py-1 bg-white/90 dark:bg-black/80 text-black dark:text-white text-xs font-medium rounded-none">Play</span>
-                      </div>
-                    </button>
-                  ))}
+                  {paginatedVideos.map((video, idx) => {
+                    const globalIndex = currentPage * itemsPerPage + idx
+                    const eager = globalIndex < 6
+                    const isPriority = globalIndex === 0
+
+                    return (
+                      <button
+                        key={video.src ?? `${video.title}-${idx}`}
+                        onClick={() => { setVideoModal(video); setImageModal(null); }}
+                        className="group relative h-40 overflow-hidden bg-muted hover:shadow-lg transition-shadow duration-300 rounded-none"
+                      >
+                        {video.youtubeId ? (
+                          <Image
+                            src={`https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`}
+                            alt={video.alt}
+                            fill
+                            loading={eager ? 'eager' : 'lazy'}
+                            fetchPriority={eager ? 'high' : 'low'}
+                            priority={isPriority}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            sizes="(max-width: 1024px) 50vw, 33vw"
+                          />
+                        ) : (
+                          <video
+                            preload={eager ? 'metadata' : 'metadata'}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          >
+                            <source src={video.src} type="video/mp4" />
+                          </video>
+                        )}
+                        <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 dark:bg-black/60 dark:group-hover:bg-black/70 transition-colors pointer-events-none" />
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                          <span className="px-3 py-1 bg-white/90 dark:bg-black/80 text-black dark:text-white text-xs font-medium rounded-none">Play</span>
+                        </div>
+                      </button>
+                    )
+                  })} 
                 </div>
 
                 {/* Pagination Controls */}
@@ -566,7 +632,15 @@ export default function Folder() {
               style={{ width: 'min(90vw, 1200px)', height: '80vh', position: 'relative', marginTop: '4rem' }}
               className="shadow-lg"
             >
-              <Image src={imageModal.src} alt={imageModal.alt} fill className="object-contain" />
+              <Image
+                src={imageModal.src}
+                alt={imageModal.alt}
+                fill
+                className="max-w-[90vw] max-h-[80vh] object-contain shadow-lg"
+                sizes="(max-width: 640px) 90vw, (max-width: 1024px) 85vw, 1280px"
+                loading="eager"
+                fetchPriority="high"
+              />
               <button
                 onClick={() => setImageModal(null)}
                 className="absolute top-3 right-3 z-[70] px-3 py-1 rounded-full border-2 border-orange-500 text-orange-500 text-sm font-medium transition-colors backdrop-blur-sm hover:bg-orange-500/10"
@@ -601,6 +675,7 @@ export default function Folder() {
                 <video
                   ref={videoRef}
                   src={videoModal.src}
+                  preload="auto"
                   className="w-full h-full object-cover bg-black"
                   playsInline
                   onTouchEnd={(e) => {

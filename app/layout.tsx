@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { HeroHeader } from "@/components/header";
 import FooterSection from "@/components/footer";
 import PageLoader from "@/components/PageLoader";
+import WhatsAppFloat from "@/components/WhatsAppFloat";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,9 +42,12 @@ export default function RootLayout({
             defaultTheme="dark"
             enableSystem={false}
             disableTransitionOnChange
-          >            <PageLoader />            <HeroHeader />
+          >
+            <PageLoader />
+            <HeroHeader />
             {children}
             <FooterSection />
+            <WhatsAppFloat />
           </ThemeProvider>
       </body>
     </html>

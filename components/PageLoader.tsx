@@ -29,13 +29,16 @@ export default function PageLoader() {
     setVisible(true)
     timeoutRef.current = window.setTimeout(() => setVisible(false), 4000)
 
-    const handler = () => {
-      // Show for 4s when requested
+    const handler = (ev: Event) => {
+      // Allow callers to pass a custom duration via event.detail.duration (ms)
+      const custom = ev as CustomEvent<{ duration?: number }>
+      const duration = custom?.detail?.duration ?? 4000
+
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
       }
       setVisible(true)
-      timeoutRef.current = window.setTimeout(() => setVisible(false), 4000)
+      timeoutRef.current = window.setTimeout(() => setVisible(false), duration)
     }
 
     window.addEventListener("show-loader", handler)

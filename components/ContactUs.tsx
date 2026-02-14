@@ -39,7 +39,7 @@ export default function ContactUs() {
             <h3 className="font-semibold">Message on WhatsApp</h3>
             <p className="mt-3 text-sm text-muted-foreground max-w-[20ch]">Quick conversations happen best where you already are.</p>
             <div className="mt-6">
-              <a href="https://wa.me/2349162919586" target="_blank" rel="noopener noreferrer" aria-label="Message on WhatsApp">
+              <a href="https://wa.me/2348064032113" target="_blank" rel="noopener noreferrer" aria-label="Message on WhatsApp">
                 <Button size="lg" className="bg-green-600 hover:bg-green-700">Message on WhatsApp</Button>
               </a>
             </div>

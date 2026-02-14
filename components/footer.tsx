@@ -3,6 +3,8 @@ import { Logo } from '@/components/logo'
 import Link from 'next/link'
 import { MapPin, Mail, Phone, EyeOff } from 'lucide-react'
 import React from 'react' 
+import { useRouter } from 'next/navigation'
+
 
 const links = [
     {
@@ -24,50 +26,59 @@ const links = [
 ]
 
 export default function FooterSection() {
+    const router = useRouter()
+
     const handleNavClick = (e: React.MouseEvent, href: string) => {
+        // Fast client-side behavior to match header
+        if (href === '/projects') {
+            e.preventDefault();
+            router.push('/projects');
+            return;
+        }
+
+        if (href === '/contact') {
+            e.preventDefault();
+            router.push('/contact');
+            return;
+        }
+
+        if (href === '#link') {
+            e.preventDefault();
+            if (typeof window !== 'undefined' && (window.location.pathname === '/' || window.location.pathname === '')) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+            router.push('/');
+            return;
+        }
+
+        if (href === '#our-services') {
+            e.preventDefault();
+            if (typeof window !== 'undefined' && (window.location.pathname === '/' || window.location.pathname === '')) {
+                const el = document.getElementById('our-services');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                return;
+            }
+            router.push('/?scrollTo=our-services');
+            return;
+        }
+
+        // Fallback for any other anchors: scroll on-home or navigate with param
         if (href.startsWith('#')) {
             e.preventDefault();
-
-            // Special case: Home should go to the very top (include header),
-            // show loader and refresh / navigate after 4s so users see the loader.
-            if (href === '#link') {
-                if (typeof window !== 'undefined') {
-                    window.dispatchEvent(new CustomEvent('show-loader'))
-                }
-
-                // Scroll to top immediately for visual feedback
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-
-                if (window.location.pathname === '/' || window.location.pathname === '') {
-                    // If already on home, reload after loader finishes
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 500);
-                } else {
-                    // If coming from another page, navigate to home after loader finishes
-                    setTimeout(() => {
-                        window.location.href = '/';
-                    }, 500);
-                }
+            const id = href.slice(1);
+            if (typeof window !== 'undefined' && (window.location.pathname === '/' || window.location.pathname === '')) {
+                setTimeout(() => {
+                    const el = document.getElementById(id);
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 50);
             } else {
-                const id = href.slice(1);
-                // If not on home page, navigate there first
-                if (window.location.pathname !== '/' && window.location.pathname !== '') {
-                    window.dispatchEvent(new CustomEvent('show-loader'));
-                    setTimeout(() => {
-                        window.location.href = `/?scrollTo=${id}`;
-                    }, 500);
-                } else {
-                    // Use a small delay to ensure DOM is ready
-                    setTimeout(() => {
-                        const el = document.getElementById(id);
-                        if (el) {
-                            // Smooth scroll to the section. Offset is handled via CSS (scroll-margin-top), so we avoid mutating the DOM or adding classes.
-                            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }
-                    }, 50);
-                }
+                window.dispatchEvent(new CustomEvent('show-loader'));
+                setTimeout(() => {
+                    window.location.href = `/?scrollTo=${id}`;
+                }, 500);
             }
+            return;
         }
     };
                             
@@ -77,7 +88,19 @@ export default function FooterSection() {
                 <Link
                     href="/"
                     aria-label="go home"
-                    className="mx-auto block size-fit">
+                    className="mx-auto block size-fit"
+                    onClick={async (e) => {
+                        e.preventDefault();
+                        // If already on home, just scroll to top
+                        if (typeof window !== 'undefined' && (window.location.pathname === '/' || window.location.pathname === '')) {
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                            return;
+                        }
+
+                        // Navigate client-side then ensure top position
+                        await router.push('/');
+                        if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}>
                     <Logo />
                 </Link>
 

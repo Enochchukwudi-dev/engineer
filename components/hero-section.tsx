@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState, useRef } from 'react'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Construction, FilePenLine, Hammer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -81,6 +81,7 @@ const useMediaQuery = (query: string) => {
 
 export default function HeroSection() {
   const [bgIndex, setBgIndex] = useState(0)
+  const router = useRouter()
   const marqueeRef = useRef<HTMLDivElement>(null)
 
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
@@ -89,6 +90,27 @@ export default function HeroSection() {
     const timer = setTimeout(() => setBgIndex(i => (i + 1) % BG_IMAGES.length), BG_IMAGES[bgIndex].duration)
     return () => clearTimeout(timer)
   }, [bgIndex])
+
+  // Prefetch hero background + marquee assets to warm browser cache for instant display
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    try {
+      // preload background frames
+      BG_IMAGES.forEach((b) => {
+        const img = new window.Image()
+        img.src = b.src
+      })
+
+      // preload first few marquee images (enough to make the visible row instant)
+      MARQUEE_IMAGES.slice(0, 6).forEach((m) => {
+        const img = new window.Image()
+        img.src = m.src
+      })
+    } catch (err) {
+      /* ignore */
+    }
+  }, [])
 
   // Use consistent opacity on both server and client to avoid hydration mismatch
   const bgOpacity = 0.4
@@ -182,11 +204,11 @@ export default function HeroSection() {
               >
                 <div className="bg-foreground/10 rounded-[calc(var(--radius-xl)+0.125rem)] p-0.5">
                   <Button asChild size="lg" className="rounded-xl px-6 sm:px-5 text-sm sm:text-base">
-                    <Link href="/book"><span className="text-nowrap">Book Us</span></Link>
+                    <a href="/book" onClick={(e) => { e.preventDefault(); router.push('/book'); }}><span className="text-nowrap">Book Us</span></a>
                   </Button>
                 </div>
                 <Button asChild size="lg" variant="ghost" className="h-9 sm:h-10.5 rounded-xl px-6 sm:px-5 text-sm sm:text-base border border-gray-600">
-                  <Link href="/projects"><span className="text-nowrap hover:text-orange-500">See Projects</span></Link>
+                  <a href="/projects" onClick={(e) => { e.preventDefault(); router.push('/projects'); }}><span className="text-nowrap hover:text-orange-500">See Projects</span></a>
                 </Button>
               </AnimatedGroup>
 
@@ -221,18 +243,25 @@ export default function HeroSection() {
             <div className="ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-5xl overflow-hidden rounded-2xl border p-4 shadow-lg shadow-zinc-950/15 ring-1">
               <div className="overflow-hidden">
                 <div className="flex gap-4 min-w-[200%] marquee-track" aria-hidden>
-                  {MARQUEE_IMAGES.concat(MARQUEE_IMAGES).map((img, idx) => (
-                    <div key={`${img.src}-${idx}`} className="w-[23%] flex-shrink-0 relative z-20 rounded-sm overflow-hidden border bg-background shadow-sm">
-                      <Image 
-                        src={img.src} 
-                        alt={img.alt} 
-                        width={800} 
-                        height={540} 
-                        className="w-full h-40 md:h-56 lg:h-64 object-cover"
-                        sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 23vw"
-                      />
-                    </div>
-                  ))}
+                  {MARQUEE_IMAGES.concat(MARQUEE_IMAGES).map((img, idx) => {
+                    const eager = idx < 6
+                    const preloadPriority = idx < 2
+                    return (
+                      <div key={`${img.src}-${idx}`} className="w-[23%] flex-shrink-0 relative z-20 rounded-sm overflow-hidden border bg-background shadow-sm">
+                        <Image
+                          src={img.src}
+                          alt={img.alt}
+                          width={800}
+                          height={540}
+                          className="w-full h-40 md:h-56 lg:h-64 object-cover"
+                          sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 23vw"
+                          loading={eager ? 'eager' : 'lazy'}
+                          fetchPriority={eager ? 'high' : 'low'}
+                          priority={preloadPriority}
+                        />
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
               <style jsx>{`

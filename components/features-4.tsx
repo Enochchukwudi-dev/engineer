@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { Building, Droplets, Palette, Grid, ClipboardList, Ruler, BrickWallShield, BrickWall, DropletOff } from 'lucide-react'
 import { motion } from 'motion/react'
@@ -45,6 +45,20 @@ const itemVariants = {
 
 export default function Features() {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+    // Prefetch service background images to warm the cache for instant display
+    useEffect(() => {
+      if (typeof window === 'undefined') return;
+      try {
+        SERVICES.forEach(s => {
+          const img = new window.Image();
+          img.src = s.bg;
+        });
+      } catch {
+        /* ignore */
+      }
+    }, []);
+
     return (
         <section id="our-services" className="py-12 md:py-20">
             <div className="mx-auto max-w-5xl space-y-8 px-6 md:space-y-16">
@@ -62,9 +76,21 @@ export default function Features() {
                 >
                     {SERVICES.map((item, idx) => {
                         const IconComponent = item.icon;
+                        const eager = idx < 6;
+                        const priorityImg = idx < 3;
                         return (
-                            <motion.div key={idx} variants={itemVariants} className="h-40 relative rounded-lg overflow-hidden flex flex-col items-center justify-center text-center" style={{ backgroundImage: `url(${item.bg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-                                <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+                            <motion.div key={idx} variants={itemVariants} className="h-40 relative rounded-lg overflow-hidden flex flex-col items-center justify-center text-center">
+                                <Image
+                                  src={item.bg}
+                                  alt={item.title}
+                                  fill
+                                  className="absolute inset-0 object-cover"
+                                  loading={eager ? 'eager' : 'lazy'}
+                                  fetchPriority={eager ? 'high' : 'low'}
+                                  priority={priorityImg}
+                                  aria-hidden
+                                />
+                                <div className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-none"></div>
                                 <div className="relative z-10 space-y-2 px-4 flex flex-col items-center">
                                     <div className="flex items-center justify-center gap-2">
                                         <IconComponent className="size-4 text-orange-500" />
@@ -90,6 +116,8 @@ export default function Features() {
                           height={800}
                           className="max-w-[90vw] max-h-[80vh] object-contain shadow-lg"
                           sizes="(max-width: 640px) 90vw, (max-width: 1024px) 85vw, 1280px"
+                          loading="eager"
+                          fetchPriority="high"
                         />
                       </div>
                     </div>
